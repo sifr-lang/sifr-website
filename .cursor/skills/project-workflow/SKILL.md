@@ -83,4 +83,4 @@ Merged PRs move to Done.
 - **Owner**: `sifr-lang`
 - **Project number**: `1`
 - **Project ID**: `PVT_kwDOD7GYsM4BQXzi`
-- **Repository**: `sifr-lang/sifr-blog-website`
+- **Repository**: `sifr-lang/sifr-website`
