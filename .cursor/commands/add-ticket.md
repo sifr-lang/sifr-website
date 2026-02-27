@@ -19,12 +19,12 @@ Check @.cursor/references/available-field-id-and-single-selection-option-id.md
 
 4. Add item to the project (last added github issue):
 ```
-gh project item-add 2 --owner yaseralnajjar --url https://github.com/yaseralnajjar/sifr/issues/<issue-id>
+gh project item-add 1 --owner sifr-lang --url https://github.com/sifr-lang/sifr-blog-website/issues/<issue-id>
 ```
 
-5. Edit ticket fields (Status and Type):
-* Status = Backlog
-* Type = Epic or Task
+5. Edit ticket fields (Status and Ticket Type):
+* Status = Backlog (use "Todo" option until you add "Backlog" in project Status settings)
+* Ticket Type = Epic or Task
 ```
-gh project item-edit --project-id PVT_kwHOAKAfcc4BPKkL --id <item-id> --field-id <field-id> --single-select-option-id <single-select-option-id>
+gh project item-edit --project-id PVT_kwDOD7GYsM4BQXzi --id <item-id> --field-id <field-id> --single-select-option-id <single-select-option-id>
 ```

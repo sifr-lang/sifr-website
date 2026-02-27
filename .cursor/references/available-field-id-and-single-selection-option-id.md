@@ -1,26 +1,19 @@
 # Available field-id and single-selection-option-id
 
-These are the available field-id and single-selection-option-id:
+These are the available field-id and single-selection-option-id for the **sifr-lang** project (project number **1**):
+
 ```
 {
-  "field_id": "PVTSSF_lAHOAKAfcc4BPKkLzg9p4e8",
+  "field_id": "PVTSSF_lADOD7GYsM4BQXzizg-gvqs",
   "field_name": "Status",
   "options": [
     {
       "id": "f75ad846",
-      "name": "Backlog"
-    },
-    {
-      "id": "244b4188",
-      "name": "Ready"
+      "name": "Todo"
     },
     {
       "id": "47fc9ee4",
       "name": "In Progress"
-    },
-    {
-      "id": "2d2c3b25",
-      "name": "Review"
     },
     {
       "id": "98236657",
@@ -29,67 +22,69 @@ These are the available field-id and single-selection-option-id:
   ]
 }
 {
-  "field_id": "PVTSSF_lAHOAKAfcc4BPKkLzg9p5HQ",
+  "field_id": "PVTSSF_lADOD7GYsM4BQXzizg-gvwo",
   "field_name": "Priority",
   "options": [
     {
-      "id": "6dda94fa",
+      "id": "da922e20",
       "name": "P0"
     },
     {
-      "id": "2b598731",
+      "id": "9bc1b2dd",
       "name": "P1"
     },
     {
-      "id": "1925f16b",
+      "id": "2700ea9d",
       "name": "P2"
     }
   ]
 }
 {
-  "field_id": "PVTSSF_lAHOAKAfcc4BPKkLzg9p5Ik",
+  "field_id": "PVTSSF_lADOD7GYsM4BQXzizg-gvws",
   "field_name": "Size",
   "options": [
     {
-      "id": "972337ac",
+      "id": "93492018",
       "name": "XS"
     },
     {
-      "id": "24189a8f",
+      "id": "c6f01e52",
       "name": "S"
     },
     {
-      "id": "bd5043f1",
+      "id": "03c3cb3d",
       "name": "M"
     },
     {
-      "id": "bc57cbe0",
+      "id": "53aa16f1",
       "name": "L"
     },
     {
-      "id": "05f38345",
+      "id": "b5d5681a",
       "name": "XL"
     }
   ]
 }
 {
-  "field_id": "PVTSSF_lAHOAKAfcc4BPKkLzg9p5JU",
-  "field_name": "Type",
+  "field_id": "PVTSSF_lADOD7GYsM4BQXzizg-gvxY",
+  "field_name": "Ticket Type",
   "options": [
     {
-      "id": "fb75e245",
+      "id": "b0d09ed6",
       "name": "Epic"
     },
     {
-      "id": "a2752bac",
+      "id": "60afd93e",
       "name": "Task"
     }
   ]
 }
 ```
 
-If not found, use the following command to get all the single select fields and their options:
+**Workflow mapping:** For the board columns Backlog / Ready / In Progress / Review / Done, use **Todo** as Backlog for new tickets and **In Progress** for work in progress. To get full columns (Backlog, Ready, Review), add those options to the Status field in the project settings on GitHub (Project → … → Settings → Status), then re-run the command below to refresh this list.
+
+If not found or after adding new Status options, use the following command to get all single-select fields and their options:
 
 ```
-gh project field-list 2 --owner yaseralnajjar --format json | jq '.fields[] | select(.type == "ProjectV2SingleSelectField") | {field_id: .id, field_name: .name, options: .options}'
+gh project field-list 1 --owner sifr-lang --format json | jq '.fields[] | select(.type == "ProjectV2SingleSelectField") | {field_id: .id, field_name: .name, options: .options}'
 ```
