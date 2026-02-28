@@ -296,12 +296,14 @@ Ratio:                          ~1.0x (parity)
 
 ## 15% faster async/await
 
-The original post includes an embedded benchmark tweet for this change:
-[In the next version of Bun & Safari, async/await gets 15% faster](https://twitter.com/bunjavascript/status/2003718175272370610).
+The original post includes an embedded benchmark tweet for this change.
+
+[!tweet https://twitter.com/bunjavascript/status/2003718175272370610]
 ## 30% faster Promise.race
 
-The original post includes an embedded benchmark tweet for this change:
-[In the next version of Bun & Safari, Promise.race() gets 30% faster](https://twitter.com/bunjavascript/status/2003721609337872796).
+The original post includes an embedded benchmark tweet for this change.
+
+[!tweet https://twitter.com/bunjavascript/status/2003721609337872796]
 ## Faster `Buffer.indexOf`
 
 `Buffer.indexOf` and `Buffer.includes` now use SIMD-optimized search functions, providing significant speedups when searching for patterns in large buffers.
@@ -334,12 +336,14 @@ buffer.includes("needle");
 
 ## Faster embedded `.node` files on Linux
 
-The original post includes an embedded benchmark tweet:
-[Single-file executables load large embedded .node N-API addons slightly faster on Linux](https://twitter.com/jarredsumner/status/2002282245210484922).
+The original post includes an embedded benchmark tweet.
+
+[!tweet https://twitter.com/jarredsumner/status/2002282245210484922]
 ## Faster IPC
 
-The original post includes an embedded benchmark tweet:
-[9x faster cross-process JSON IPC with large messages](https://twitter.com/jarredsumner/status/2005529511132266796).
+The original post includes an embedded benchmark tweet.
+
+[!tweet https://twitter.com/jarredsumner/status/2005529511132266796]
 ## Faster `Bun.spawnSync()` on Linux ARM64
 
 Fixed a performance regression where `Bun.spawnSync()` was up to 30x slower than expected on Linux systems with high file descriptor limits.

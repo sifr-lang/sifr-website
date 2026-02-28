@@ -326,13 +326,52 @@ const tableOfContents = headings
         const match = url.pathname.match(/^\/([^/]+)\/status\/(\d+)/);
         if (!match) return null;
 
-        return `https://x.com/${match[1]}/status/${match[2]}`;
+        return `https://twitter.com/${match[1]}/status/${match[2]}`;
       } catch {
         return null;
       }
     };
 
+    const createTweetEmbedElement = (tweetUrl) => {
+      const embed = document.createElement('figure');
+      embed.className = 'tweet-embed';
+
+      const iframe = document.createElement('iframe');
+      iframe.className = 'tweet-embed-frame';
+      iframe.title = 'Embedded X post';
+      iframe.loading = 'lazy';
+      iframe.src = `https://twitframe.com/show?url=${encodeURIComponent(tweetUrl)}`;
+      iframe.setAttribute('scrolling', 'no');
+      iframe.setAttribute('frameborder', '0');
+      iframe.setAttribute('allowtransparency', 'true');
+
+      embed.appendChild(iframe);
+      return embed;
+    };
+
     let embeddedTweetCount = 0;
+    const extractTweetUrlFromMarker = (rawText) => {
+      const markerMatch = rawText.match(/^\[!tweet\s+(.+)\]$/i);
+      if (!markerMatch) return null;
+
+      const urlMatch = markerMatch[1].match(
+        /https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/[^\s\]]+/i,
+      );
+
+      return urlMatch ? urlMatch[0] : null;
+    };
+
+    content.querySelectorAll('p').forEach((paragraph) => {
+      const markerUrl = extractTweetUrlFromMarker((paragraph.textContent || '').trim());
+      if (!markerUrl) return;
+
+      const tweetUrl = normalizeTweetUrl(markerUrl);
+      if (!tweetUrl) return;
+
+      paragraph.replaceWith(createTweetEmbedElement(tweetUrl));
+      embeddedTweetCount += 1;
+    });
+
     const tweetLinks = content.querySelectorAll('a[href*="/status/"]');
 
     tweetLinks.forEach((link) => {
@@ -346,32 +385,10 @@ const tableOfContents = headings
         return;
       }
 
-      const blockquote = document.createElement('blockquote');
-      blockquote.className = 'tweet-embed twitter-tweet';
-      blockquote.setAttribute('data-dnt', 'true');
-
-      const tweetAnchor = document.createElement('a');
-      tweetAnchor.href = tweetUrl;
-      tweetAnchor.textContent = 'View post on X';
-      blockquote.appendChild(tweetAnchor);
-
-      paragraph.insertAdjacentElement('afterend', blockquote);
+      paragraph.insertAdjacentElement('afterend', createTweetEmbedElement(tweetUrl));
       embeddedTweetCount += 1;
     });
 
     if (embeddedTweetCount === 0) return;
-
-    if (window.twttr?.widgets?.load) {
-      window.twttr.widgets.load(content);
-      return;
-    }
-
-    if (!document.querySelector('script[data-twitter-widgets]')) {
-      const widgetScript = document.createElement('script');
-      widgetScript.src = 'https://platform.twitter.com/widgets.js';
-      widgetScript.async = true;
-      widgetScript.setAttribute('data-twitter-widgets', 'true');
-      document.body.appendChild(widgetScript);
-    }
   })();
 </script>

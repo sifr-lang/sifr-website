@@ -522,8 +522,16 @@ footer a:hover {
 
 .tweet-embed {
   margin: 1rem 0 2.1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #d6deea;
+  display: block;
+}
+
+.tweet-embed-frame {
+  display: block;
+  width: 100%;
+  min-height: 640px;
+  border: 0;
+  border-radius: 0.85rem;
+  background: #fff;
 }
 
 .blog-content code {
