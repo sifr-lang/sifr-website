@@ -1,6 +1,13 @@
 {
   "name": "sifr-site",
   "compatibility_date": "2026-02-28",
+  "workers_dev": false,
+  "routes": [
+    {
+      "pattern": "sifr.sh",
+      "custom_domain": true
+    }
+  ],
   "assets": {
     "directory": "./dist"
   }
