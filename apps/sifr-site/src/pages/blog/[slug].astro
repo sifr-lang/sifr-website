@@ -219,5 +219,65 @@ const tableOfContents = headings
       groupIndex += 1;
       pointer = cursor;
     }
+
+    const normalizeTweetUrl = (href) => {
+      try {
+        const url = new URL(href, window.location.origin);
+        const hostname = url.hostname.replace(/^www\./, '');
+
+        if (hostname !== 'twitter.com' && hostname !== 'x.com') {
+          return null;
+        }
+
+        const match = url.pathname.match(/^\/([^/]+)\/status\/(\d+)/);
+        if (!match) return null;
+
+        return `https://x.com/${match[1]}/status/${match[2]}`;
+      } catch {
+        return null;
+      }
+    };
+
+    let embeddedTweetCount = 0;
+    const tweetLinks = content.querySelectorAll('a[href*="/status/"]');
+
+    tweetLinks.forEach((link) => {
+      const tweetUrl = normalizeTweetUrl(link.href);
+      if (!tweetUrl) return;
+
+      const paragraph = link.closest('p');
+      if (!paragraph) return;
+
+      if (paragraph.nextElementSibling?.classList.contains('tweet-embed')) {
+        return;
+      }
+
+      const blockquote = document.createElement('blockquote');
+      blockquote.className = 'tweet-embed twitter-tweet';
+      blockquote.setAttribute('data-dnt', 'true');
+
+      const tweetAnchor = document.createElement('a');
+      tweetAnchor.href = tweetUrl;
+      tweetAnchor.textContent = 'View post on X';
+      blockquote.appendChild(tweetAnchor);
+
+      paragraph.insertAdjacentElement('afterend', blockquote);
+      embeddedTweetCount += 1;
+    });
+
+    if (embeddedTweetCount === 0) return;
+
+    if (window.twttr?.widgets?.load) {
+      window.twttr.widgets.load(content);
+      return;
+    }
+
+    if (!document.querySelector('script[data-twitter-widgets]')) {
+      const widgetScript = document.createElement('script');
+      widgetScript.src = 'https://platform.twitter.com/widgets.js';
+      widgetScript.async = true;
+      widgetScript.setAttribute('data-twitter-widgets', 'true');
+      document.body.appendChild(widgetScript);
+    }
   })();
 </script>
