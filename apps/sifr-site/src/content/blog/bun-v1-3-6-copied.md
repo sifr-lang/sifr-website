@@ -4,7 +4,6 @@ excerpt: "Fixes 45 issues (addressing 125 👍), including Bun.Archive, Bun.JSON
 date: 2026-01-13
 eyebrow: "Release Notes"
 author: "Bun Team"
-sourceUrl: "https://bun.com/blog/bun-v1.3.6"
 ---
 
 

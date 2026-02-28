@@ -8,7 +8,6 @@ const blog = defineCollection({
     date: z.coerce.date(),
     eyebrow: z.string().optional(),
     author: z.string().optional(),
-    sourceUrl: z.string().url().optional(),
   }),
 });
 

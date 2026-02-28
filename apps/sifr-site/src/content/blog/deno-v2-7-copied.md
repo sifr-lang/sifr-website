@@ -4,7 +4,6 @@ excerpt: "Deno 2.7 stabilizes Temporal, adds Windows on ARM builds, supports npm
 date: 2026-02-25
 eyebrow: "Release Notes"
 author: "Deno Team"
-sourceUrl: "https://deno.com/blog/v2.7"
 ---
 
 We are happy to announce the release of version 2.7 of the Deno runtime, which brings a number of improvements and additions.
