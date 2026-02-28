@@ -1,31 +1,25 @@
 ---
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
 import Layout from '../../components/Layout.astro';
 
-const posts = [
-  {
-    title: 'Sifr release notes: alpha preview',
-    excerpt:
-      'A first look at the project direction and roadmap for a performant Python-compatible toolchain.',
-  },
-  {
-    title: 'Building a language toolchain on top of Rust',
-    excerpt:
-      'Notes from the early prototyping work and why ergonomics matter as much as performance.',
-  },
-];
+const posts = (await getCollection('blog')).sort(
+  (a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) =>
+    b.data.date.valueOf() - a.data.date.valueOf(),
+);
 ---
 
 <Layout title="Sifr blog">
   <section>
     <h1>Blog</h1>
     <ul class="blog-list">
-      {posts.map((post) => (
+      {posts.map((post: CollectionEntry<'blog'>) => (
         <li>
           <h2 class="blog-title">
-            <a href="#">{post.title}</a>
+            <a href={`/blog/${post.slug}`}>{post.data.title}</a>
           </h2>
-          <p class="blog-readme">{post.excerpt}</p>
-          <a href="#">Read more</a>
+          <p class="blog-readme">{post.data.excerpt}</p>
+          <a href={`/blog/${post.slug}`}>Read more</a>
         </li>
       ))}
     </ul>
