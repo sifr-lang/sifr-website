@@ -7,6 +7,31 @@ const posts = (await getCollection('blog')).sort(
   (a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) =>
     b.data.date.valueOf() - a.data.date.valueOf(),
 );
+
+const formatDate = (date: Date): string =>
+  date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+const estimateReadingMinutes = (body: string): number =>
+  Math.max(
+    1,
+    Math.round(
+      body
+        .replace(/```[\s\S]*?```/g, ' ')
+        .replace(/`[^`]*`/g, ' ')
+        .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+        .split(/\s+/)
+        .filter(Boolean).length / 220,
+    ),
+  );
+
+const postsWithMeta = posts.map((post: CollectionEntry<'blog'>) => ({
+  post,
+  readingMinutes: estimateReadingMinutes(post.body),
+}));
 ---
 
 <Layout
@@ -17,16 +42,28 @@ const posts = (await getCollection('blog')).sort(
   imageAlt="Sifr blog"
   keywords={['sifr', 'blog', 'release notes', 'language engineering']}
 >
-  <section>
+  <section class="blog-index">
     <h1>Blog</h1>
     <ul class="blog-list">
-      {posts.map((post: CollectionEntry<'blog'>) => (
-        <li>
+      {postsWithMeta.map(({ post, readingMinutes }) => (
+        <li class="blog-card">
+          <p class="blog-card-eyebrow">{post.data.eyebrow ?? 'Engineering Notes'}</p>
           <h2 class="blog-title">
             <a href={`/blog/${post.slug}`}>{post.data.title}</a>
           </h2>
+          <div class="blog-card-meta">
+            <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+            <span class="blog-card-meta-divider" aria-hidden="true">•</span>
+            <span>{readingMinutes} min read</span>
+            {post.data.author && (
+              <>
+                <span class="blog-card-meta-divider" aria-hidden="true">•</span>
+                <span class="blog-card-author">By {post.data.author}</span>
+              </>
+            )}
+          </div>
           <p class="blog-readme">{post.data.excerpt}</p>
-          <a href={`/blog/${post.slug}`}>Read more</a>
+          <a class="blog-read-link" href={`/blog/${post.slug}`}>Read article →</a>
         </li>
       ))}
     </ul>
