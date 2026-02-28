@@ -46,24 +46,24 @@ const postsWithMeta = posts.map((post: CollectionEntry<'blog'>) => ({
     <h1>Blog</h1>
     <ul class="blog-list">
       {postsWithMeta.map(({ post, readingMinutes }) => (
-        <li class="blog-card">
-          <p class="blog-card-eyebrow">{post.data.eyebrow ?? 'Engineering Notes'}</p>
-          <h2 class="blog-title">
-            <a href={`/blog/${post.slug}`}>{post.data.title}</a>
-          </h2>
-          <div class="blog-card-meta">
-            <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
-            <span class="blog-card-meta-divider" aria-hidden="true">•</span>
-            <span>{readingMinutes} min read</span>
-            {post.data.author && (
-              <>
-                <span class="blog-card-meta-divider" aria-hidden="true">•</span>
-                <span class="blog-card-author">By {post.data.author}</span>
-              </>
-            )}
-          </div>
-          <p class="blog-readme">{post.data.excerpt}</p>
-          <a class="blog-read-link" href={`/blog/${post.slug}`}>Read article →</a>
+        <li>
+          <a class="blog-card" href={`/blog/${post.slug}`}>
+            <p class="blog-card-eyebrow">{post.data.eyebrow ?? 'Engineering Notes'}</p>
+            <h2 class="blog-title">{post.data.title}</h2>
+            <div class="blog-card-meta">
+              <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+              <span class="blog-card-meta-divider" aria-hidden="true">•</span>
+              <span>{readingMinutes} min read</span>
+              {post.data.author && (
+                <>
+                  <span class="blog-card-meta-divider" aria-hidden="true">•</span>
+                  <span class="blog-card-author">By {post.data.author}</span>
+                </>
+              )}
+            </div>
+            <p class="blog-readme">{post.data.excerpt}</p>
+            <span class="blog-read-link">Read article →</span>
+          </a>
         </li>
       ))}
     </ul>

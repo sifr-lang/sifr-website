@@ -237,17 +237,24 @@ p {
 }
 
 .blog-card {
+  display: block;
   border: 1px solid var(--border);
   border-radius: 1rem;
   padding: 1.35rem 1.5rem;
   background: #fff;
   transition: all 0.2s ease;
+  text-decoration: none;
 }
 
 .blog-card:hover {
   border-color: #d1d5db;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   transform: translateY(-1px);
+}
+
+.blog-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .blog-card-eyebrow {
@@ -264,16 +271,8 @@ p {
   font-size: clamp(1.25rem, 2.2vw, 1.8rem);
   letter-spacing: -0.01em;
   line-height: 1.2;
-}
-
-.blog-title a {
-  text-decoration: none;
   color: var(--text);
   font-weight: 700;
-}
-
-.blog-title a:hover {
-  color: var(--accent);
 }
 
 .blog-card-meta {
@@ -306,10 +305,10 @@ p {
   display: inline-block;
   margin-top: 0.72rem;
   font-weight: 700;
-  text-decoration: none;
+  color: var(--accent);
 }
 
-.blog-read-link:hover {
+.blog-card:hover .blog-read-link {
   text-decoration: underline;
 }
 
