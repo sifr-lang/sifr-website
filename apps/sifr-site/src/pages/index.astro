@@ -96,14 +96,14 @@ import Layout from '../components/Layout.astro';
     };
 
     const setActiveTab = (targetTab) => {
-      const platform = targetTab.dataset.platform;
-      const command = installCommands[platform];
+      const platform = targetTab.getAttribute('data-platform');
+      const command = platform && platform in installCommands ? installCommands[platform] : undefined;
 
       tabs.forEach((tab) => {
         const isActive = tab === targetTab;
         tab.classList.toggle('is-active', isActive);
         tab.setAttribute('aria-selected', String(isActive));
-        tab.tabIndex = isActive ? 0 : -1;
+        tab.setAttribute('tabindex', isActive ? '0' : '-1');
       });
 
       if (commandText && commandPrompt && command) {
@@ -120,6 +120,10 @@ import Layout from '../components/Layout.astro';
       tab.addEventListener('click', () => setActiveTab(tab));
 
       tab.addEventListener('keydown', (event) => {
+        if (!(event instanceof KeyboardEvent)) {
+          return;
+        }
+
         if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
           return;
         }
@@ -139,8 +143,10 @@ import Layout from '../components/Layout.astro';
         }
 
         const nextTab = tabs[nextIndex];
-        setActiveTab(nextTab);
-        nextTab.focus();
+        if (nextTab instanceof HTMLElement) {
+          setActiveTab(nextTab);
+          nextTab.focus();
+        }
       });
     });
 
