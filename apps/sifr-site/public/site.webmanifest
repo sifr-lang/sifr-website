@@ -1,7 +1,7 @@
 {
   "name": "Sifr",
   "short_name": "Sifr",
-  "description": "Sifr is a compact, fast language runtime with Python-like ergonomics and Rust-level speed.",
+  "description": "Sifr is a compact, safe language for people who want Python-like ergonomics with Rust-level execution speed.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f4f7fb",
