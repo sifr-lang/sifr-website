@@ -1,107 +1,153 @@
 ---
 title: Building a programming language with AI agents
-excerpt: I built a compiled programming language using AI agents over a single weekend.
-date: 2026-02-24
+excerpt: A practical workflow for using AI agents to build a real compiler without losing quality, ownership, or velocity.
+date: 2026-02-28
 ---
 
-I built a compiled programming language using AI agents over a single weekend.
+I built a compiled programming language with AI agents, but not by letting them run wild.
 
-Not by letting them spam 1,000 commits/hour.
-But by forcing them to act like disciplined software engineers.
+The difference between a demo and a production-ready system is process. This post covers the exact workflow I used to build Sifr, where it worked, where it failed, and what I would do differently if I started again.
 
-Here is the 3-step workflow that makes AI development actually scalable 🧵👇
+## Why most agent-driven projects collapse
 
----
+Most AI coding experiments fail for predictable reasons:
 
-1/ The Problem with "Self-Driving" Codebases
+- Too much code is generated before architecture is stable
+- The same agent writes and "reviews" changes
+- PRs become hard to reason about
+- Context drifts and regressions sneak in
 
-We've all seen the demos: "Thousands of agents! Infinite commits!"
+The fix is not a better prompt. The fix is engineering structure.
 
-But throughput ≠ progress.
-10 meaningful commits > 1,000 lines of chaotic code.
+## The project target
 
-I wanted agents that follow a process, not just generate text.
+Sifr is designed with three goals:
 
----
+- Python-like syntax and readability
+- Compilation to Rust for performance and safety
+- A strict static type system with ownership-oriented semantics
 
-2/ The Project: Sifr
+That means the system is more than a parser. It includes a full pipeline:
 
-I set out to build Sifr:
-• Python syntax 🐍
-• Compiles to Rust 🦀
-• Static typing & borrow-by-default
+- Lexer
+- Parser + AST
+- Semantic analysis and HIR
+- Type checking
+- Code generation
+- Tooling and runtime integration
 
-It’s a full compiler pipeline (Lexer -> AST -> HIR -> Binary).
-And it was built almost entirely by AI agents following a strict workflow.
+For a project at this scope, agent discipline matters more than raw model quality.
 
----
+## The operating model: architect + specialist agents
 
-3/ Strategy #1: The "Disciplined" Task Loop
+I used a role-based model instead of one general-purpose agent.
 
-Agents don't just "write code." They follow the lifecycle:
-Draft Task 📝 -> Backlog -> Refine -> Implement 💻 -> Review 🔍 -> Merge
+- Architect (human): sets constraints, sequencing, acceptance criteria
+- Implementer agent: writes code for a narrowly scoped task
+- Reviewer agent: audits behavior, tests, and risks
+- Judge agent: performs phase-level quality gates
 
-Crucially: One agent writes code. A DIFFERENT agent reviews it.
-No merging without passing tests.
+The most important rule: the implementer and reviewer are always different.
 
----
+## The task loop that made this work
 
-4/ Strategy #2: The PRDS (The Secret Weapon)
+Every unit of work followed the same lifecycle:
 
-For complex features (Epics), agents aren't allowed to code immediately.
-They must write a PRDS first:
-• PRD (Requirements)
-• Solution Design (Architecture)
+1. Draft task with clear scope and acceptance criteria
+2. Place in backlog and refine dependency order
+3. Implement in a focused PR
+4. Review with a separate agent
+5. Run local validation
+6. Merge only after passing checks
 
-I review the PRDS. That’s my "Human-in-the-loop" moment.
-I review the PLAN, not 50 tiny PRs.
+This sounds simple, but consistency is what prevents chaos.
 
----
+## PRDS before epics
 
-5/ Strategy #3: Phased Execution
+For larger features, no coding starts immediately.
 
-You can't build a compiler all at once.
-We organized work into 21 Phases.
-• Phase 1: Foundations
-• Phase 2: Type System
-• ...
-• Phase 13: Generics
+Each epic begins with a PRDS document (product requirements + solution design):
 
-Sequential execution prevents "dependency spaghetti."
-Foundations first. Features second.
+- Problem statement
+- Non-goals
+- Architecture changes
+- Data and API impact
+- Validation strategy
+- Rollout and risk notes
 
----
+This changed everything. Reviewing design upfront is faster and safer than reviewing dozens of reactive fixes later.
 
-6/ The "Judge" Model
+## Sequential phases beat parallel entropy
 
-After each Phase, I bring in a "Judge" agent (usually a smarter model).
-It evaluates the entire phase.
-It decides if we need to re-plan or if we can proceed.
+A compiler has strong dependency chains. If you parallelize too early, you create contradictory assumptions.
 
-It’s like having a Staff Engineer review the team's output every sprint.
+I organized work into explicit phases and only moved forward when the current phase was stable. Foundations first, then feature depth.
 
----
+Examples:
 
-7/ The Results?
+- Phase 1: Core compiler infrastructure
+- Phase 2: Type system foundations
+- Phase 3: Error reporting and diagnostics
+- Later phases: Generics, advanced inference, optimization passes
 
-In just a weekend for the core (and continuing since):
-✅ 11 Phases completed
-✅ 80+ Epics shipped
-✅ Full type system + 45 stdlib modules
-✅ Zero-panic guarantees
+This reduced rework and kept each phase testable.
 
-All without me writing the boilerplate. I acted as the Architect; they were the Engineers.
+## Validation strategy
 
----
+Each task had required local checks, and each phase had broader audits.
 
-8/ Want to try this workflow?
+Task-level checks:
 
-1. Force agents to plan before coding (PRDS).
-2. Use different agents for implementation vs. review.
-3. Don't be the bottleneck—review plans, not just lines of code.
+- Unit tests for touched behavior
+- Integration tests for affected pipeline stages
+- Fast smoke demos for critical user flows
 
-Check out the full compiler written by AI here:
-https://github.com/yaseralnajjar/sifr
+Phase-level checks:
 
-And the full article explaining the workflow:
-[LINK TO ARTICLE]
+- Judge-agent review of architecture drift
+- Regression scan against previously completed phases
+- Demo scripts to prove milestone behavior end-to-end
+
+If a phase failed review, it went back to planning instead of patching blindly.
+
+## What worked especially well
+
+- Small, reviewable PRs with explicit acceptance criteria
+- Separate implementation and review responsibilities
+- Upfront design docs for complex work
+- Strict phase sequencing for dependency-heavy systems
+- Frequent local validation instead of relying on CI feedback loops
+
+## What failed and how I corrected it
+
+Early on, I let tasks become too broad. That created noisy diffs and fragile reviews.
+
+Correction:
+
+- Split large tasks into smaller contracts
+- Tighten "definition of done" per task
+- Reject PRs that mix unrelated concerns
+
+Another recurring issue was optimistic assumptions in generated code.
+
+Correction:
+
+- Require explicit invariants in task descriptions
+- Add negative tests for failure paths, not only happy paths
+
+## Practical template you can reuse
+
+If you want to run agents on a serious codebase, start with this:
+
+1. Use planning artifacts before coding (at least for epics)
+2. Keep one concern per PR
+3. Use different agents for implementation and review
+4. Require local test validation before merge
+5. Add periodic "judge" reviews to detect drift
+6. Prefer phase progression over unbounded parallel work
+
+## Final takeaway
+
+AI agents can dramatically accelerate delivery, but only if you enforce software engineering discipline.
+
+The leverage comes from orchestration, not autonomy. Treat agents as specialists in a controlled workflow, and you can ship ambitious systems with quality still intact.

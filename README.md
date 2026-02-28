@@ -9,6 +9,14 @@ This repository is a monorepo that hosts the first Sifr-facing site in `apps/sif
 - `apps/sifr-site/public/styles/global.css` — global stylesheet served as a static asset.
 - `apps/sifr-site/src/content/blog/*.md` — Markdown blog posts.
 
+## Current blog posts
+
+- `alpha-preview.md`
+- `rust-toolchain-notes.md`
+- `building-a-programming-language-with-ai-agents.md`
+- `bun-v1-3-6-copied.md` (copied from [bun.com/blog/bun-v1.3.6](https://bun.com/blog/bun-v1.3.6))
+- `deno-v2-7-copied.md` (copied from [deno.com/blog/v2.7](https://deno.com/blog/v2.7))
+
 ## Writing blog posts
 
 Create a new Markdown file in `apps/sifr-site/src/content/blog/`:
