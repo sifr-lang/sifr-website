@@ -1,0 +1,21 @@
+{
+  "name": "Sifr",
+  "short_name": "Sifr",
+  "description": "Sifr is a compact, safe language for people who want Python-like ergonomics with Rust-level execution speed.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#0f62fe",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

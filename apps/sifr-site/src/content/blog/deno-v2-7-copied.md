@@ -2,8 +2,11 @@
 title: "Deno 2.7: Temporal API, Windows ARM, and npm overrides"
 excerpt: "Deno 2.7 stabilizes Temporal, adds Windows on ARM builds, supports npm overrides, and ships broad compatibility and performance improvements."
 date: 2026-02-25
-sourceUrl: "https://deno.com/blog/v2.7"
+eyebrow: "Release Notes"
+author: "Deno Team"
 ---
+
+[!youtube https://www.youtube.com/watch?v=AfOWy3uwnCA]
 
 We are happy to announce the release of version 2.7 of the Deno runtime, which brings a number of improvements and additions.
 

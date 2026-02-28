@@ -1,0 +1,218 @@
+---
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import Layout from '../components/Layout.astro';
+
+const latestPosts = (await getCollection('blog'))
+  .sort(
+    (a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) =>
+      b.data.date.valueOf() - a.data.date.valueOf(),
+  )
+  .slice(0, 3);
+---
+
+<Layout
+  title="Page not found | Sifr"
+  description="The page you requested could not be found. Continue exploring Sifr from the homepage or blog."
+  canonical="/404"
+  image="/logo.webp"
+  imageAlt="Sifr logo"
+  noindex={true}
+>
+  <section class="not-found" aria-labelledby="not-found-title">
+    <div class="not-found-glow not-found-glow-left" aria-hidden="true"></div>
+    <div class="not-found-glow not-found-glow-right" aria-hidden="true"></div>
+
+    <div class="not-found-card">
+      <p class="not-found-code" aria-hidden="true">404</p>
+      <p class="not-found-kicker">Looks like this path does not exist.</p>
+      <h1 id="not-found-title">Page not found</h1>
+      <p class="not-found-description">
+        The link may be outdated, moved, or typed incorrectly. Use one of the paths below to keep moving.
+      </p>
+
+      <div class="not-found-actions">
+        <a class="button-link primary" href="/">Go to homepage</a>
+        <a class="button-link secondary" href="/blog">Read the blog</a>
+      </div>
+
+      {latestPosts.length > 0 && (
+        <div class="not-found-suggestions" aria-label="Latest blog posts">
+          <p class="not-found-suggestions-title">Latest posts</p>
+          <ul>
+            {latestPosts.map((post) => (
+              <li>
+                <a href={`/blog/${post.slug}`}>{post.data.title}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .not-found {
+    position: relative;
+    isolation: isolate;
+    min-height: calc(100vh - var(--header-height) - 10rem);
+    display: grid;
+    place-items: center;
+    padding: clamp(1.5rem, 4vw, 3.5rem) 0;
+  }
+
+  .not-found-glow {
+    position: absolute;
+    width: clamp(14rem, 30vw, 24rem);
+    height: clamp(14rem, 30vw, 24rem);
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.45;
+    pointer-events: none;
+    z-index: -1;
+    animation: drift 11s ease-in-out infinite;
+  }
+
+  .not-found-glow-left {
+    left: -4rem;
+    top: 6%;
+    background: radial-gradient(circle at 30% 30%, #8ab6ff 0%, #c8dbff 60%, transparent 100%);
+  }
+
+  .not-found-glow-right {
+    right: -2rem;
+    bottom: 4%;
+    background: radial-gradient(circle at 65% 40%, #9ee6d4 0%, #d1f7eb 62%, transparent 100%);
+    animation-delay: -5s;
+  }
+
+  .not-found-card {
+    width: min(100%, 48rem);
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: 1.4rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.96));
+    box-shadow: 0 24px 52px -34px rgba(15, 23, 42, 0.55);
+    padding: clamp(1.6rem, 4vw, 3rem);
+    backdrop-filter: blur(6px);
+  }
+
+  .not-found-code {
+    margin: 0;
+    font-size: clamp(3.2rem, 11vw, 7.4rem);
+    line-height: 0.94;
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    color: #0f62fe;
+    text-shadow: 0 10px 30px rgba(15, 98, 254, 0.24);
+  }
+
+  .not-found-kicker {
+    margin: 1rem 0 0;
+    font-size: 0.8rem;
+    letter-spacing: 0.09em;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #4f6fb9;
+  }
+
+  .not-found-card h1 {
+    margin-top: 0.65rem;
+    margin-bottom: 0.85rem;
+    font-size: clamp(2rem, 6vw, 3rem);
+  }
+
+  .not-found-description {
+    margin: 0 auto;
+    max-width: 42ch;
+    font-size: clamp(1rem, 2.3vw, 1.18rem);
+    line-height: 1.7;
+    color: #45556f;
+  }
+
+  .not-found-actions {
+    margin-top: 1.8rem;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+  }
+
+  .not-found-suggestions {
+    margin-top: 2rem;
+    border-top: 1px solid #dde5f0;
+    padding-top: 1.25rem;
+  }
+
+  .not-found-suggestions-title {
+    margin: 0 0 0.55rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+    font-weight: 800;
+  }
+
+  .not-found-suggestions ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .not-found-suggestions a {
+    color: #1f3f8a;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .not-found-suggestions a:hover {
+    text-decoration: underline;
+  }
+
+  @keyframes drift {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    50% {
+      transform: translate3d(0, -10px, 0) scale(1.04);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .not-found {
+      min-height: calc(100vh - var(--header-height) - 5.5rem);
+    }
+
+    .not-found-card {
+      border-radius: 1.1rem;
+      text-align: left;
+      padding: 1.35rem 1.2rem;
+    }
+
+    .not-found-code,
+    .not-found-kicker,
+    .not-found-card h1,
+    .not-found-description {
+      text-align: left;
+    }
+
+    .not-found-actions {
+      justify-content: flex-start;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .not-found-glow {
+      animation: none;
+    }
+
+    .button-link {
+      transition: none;
+    }
+  }
+</style>

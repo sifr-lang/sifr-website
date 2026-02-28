@@ -26,9 +26,39 @@
             }
           ]
         },
-        "sourceUrl": {
-          "type": "string",
-          "format": "uri"
+        "updated": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "integer",
+              "format": "unix-time"
+            }
+          ]
+        },
+        "eyebrow": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ogImage": {
+          "type": "string"
+        },
+        "ogImageAlt": {
+          "type": "string"
         },
         "$schema": {
           "type": "string"

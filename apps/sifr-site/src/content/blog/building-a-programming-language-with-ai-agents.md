@@ -2,6 +2,8 @@
 title: Building a programming language with AI agents
 excerpt: A practical workflow for using AI agents to build a real compiler without losing quality, ownership, or velocity.
 date: 2026-02-28
+eyebrow: "Engineering Workflow"
+author: "Yaser Alnajjar"
 ---
 
 I built a compiled programming language with AI agents, but not by letting them run wild.

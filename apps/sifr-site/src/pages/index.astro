@@ -2,33 +2,167 @@
 import Layout from '../components/Layout.astro';
 ---
 
-<Layout title="Sifr — Home">
+<Layout
+  title="Sifr - Python syntax, Rust performance"
+  description="Sifr is a compact, safe language for people who want Python-like ergonomics with Rust-level execution speed."
+  canonical="/"
+  image="/logo.webp"
+  imageAlt="Sifr logo"
+  keywords={['sifr', 'programming language', 'python syntax', 'rust performance']}
+>
   <section class="hero-section">
     <div class="hero-content">
-      <img
-        class="hero-logo"
-        src="/logo.webp"
-        alt="Sifr logo"
-        width="96"
-        height="96"
-      />
+      <div class="hero-logo-shell" aria-hidden="true">
+        <img
+          class="hero-logo"
+          src="/apple-touch-icon.png"
+          alt=""
+          width="180"
+          height="180"
+          loading="eager"
+          decoding="async"
+        />
+      </div>
       <h1 class="hero-title">Sifr</h1>
       <p class="hero-tagline">Python syntax. Rust performance.</p>
       <p class="hero-description">
-        Sifr is a compact, fast language runtime for people who want Python-like
-        ergonomics with Rust-level execution speed.
+        Sifr is a compact, safe language for people who want Python-like ergonomics with Rust-level execution speed.
       </p>
-      <div class="actions">
-        <a
-          class="button-link primary"
-          href="https://github.com/yaseralnajjar/sifr"
-          target="_blank"
-          rel="noreferrer noopener"
-        >
-          Get started
-        </a>
-        <a class="button-link secondary" href="/blog">Read the blog</a>
+      <div class="install-widget" data-install-widget>
+        <div class="install-widget-head">
+          <div class="install-tabs" role="tablist" aria-label="Operating system install commands">
+            <button
+              type="button"
+              class="install-tab is-active"
+              role="tab"
+              id="install-tab-unix"
+              aria-selected="true"
+              aria-controls="install-command-panel"
+              data-platform="unix"
+            >
+              Linux &amp; macOS
+            </button>
+            <button
+              type="button"
+              class="install-tab"
+              role="tab"
+              id="install-tab-windows"
+              aria-selected="false"
+              aria-controls="install-command-panel"
+              tabindex="-1"
+              data-platform="windows"
+            >
+              Windows
+            </button>
+          </div>
+        </div>
+
+        <div class="install-command-shell" id="install-command-panel" role="tabpanel" aria-labelledby="install-tab-unix">
+          <span class="install-command-prompt" data-command-prompt>$</span>
+          <code class="install-command-text" data-command-text>git clone https://github.com/yaseralnajjar/sifr.git &amp;&amp; cd sifr &amp;&amp; cargo build --release</code>
+          <button type="button" class="install-copy-btn" data-copy-btn aria-label="Copy install command">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+              <rect x="4" y="4" width="11" height="11" rx="2"></rect>
+            </svg>
+          </button>
+        </div>
+        <p class="install-copy-status" aria-live="polite" data-copy-status>Copy command</p>
       </div>
     </div>
   </section>
 </Layout>
+
+<script>
+  const installWidget = document.querySelector('[data-install-widget]');
+
+  if (installWidget) {
+    const tabs = Array.from(installWidget.querySelectorAll('[role="tab"]'));
+    const commandText = installWidget.querySelector('[data-command-text]');
+    const commandPrompt = installWidget.querySelector('[data-command-prompt]');
+    const copyButton = installWidget.querySelector('[data-copy-btn]');
+    const copyStatus = installWidget.querySelector('[data-copy-status]');
+    const commandPanel = installWidget.querySelector('#install-command-panel');
+
+    const installCommands = {
+      unix: {
+        command: 'git clone https://github.com/yaseralnajjar/sifr.git && cd sifr && cargo build --release',
+        prompt: '$',
+      },
+      windows: {
+        command: 'git clone https://github.com/yaseralnajjar/sifr.git; cd sifr; cargo build --release',
+        prompt: 'PS>',
+      },
+    };
+
+    const setActiveTab = (targetTab) => {
+      const platform = targetTab.getAttribute('data-platform');
+      const command = platform && platform in installCommands ? installCommands[platform] : undefined;
+
+      tabs.forEach((tab) => {
+        const isActive = tab === targetTab;
+        tab.classList.toggle('is-active', isActive);
+        tab.setAttribute('aria-selected', String(isActive));
+        tab.setAttribute('tabindex', isActive ? '0' : '-1');
+      });
+
+      if (commandText && commandPrompt && command) {
+        commandText.textContent = command.command;
+        commandPrompt.textContent = command.prompt;
+      }
+
+      if (commandPanel) {
+        commandPanel.setAttribute('aria-labelledby', targetTab.id);
+      }
+    };
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => setActiveTab(tab));
+
+      tab.addEventListener('keydown', (event) => {
+        if (!(event instanceof KeyboardEvent)) {
+          return;
+        }
+
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+          return;
+        }
+
+        event.preventDefault();
+        const currentIndex = tabs.indexOf(tab);
+        let nextIndex = currentIndex;
+
+        if (event.key === 'ArrowRight') {
+          nextIndex = (currentIndex + 1) % tabs.length;
+        } else if (event.key === 'ArrowLeft') {
+          nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+        } else if (event.key === 'Home') {
+          nextIndex = 0;
+        } else if (event.key === 'End') {
+          nextIndex = tabs.length - 1;
+        }
+
+        const nextTab = tabs[nextIndex];
+        if (nextTab instanceof HTMLElement) {
+          setActiveTab(nextTab);
+          nextTab.focus();
+        }
+      });
+    });
+
+    if (copyButton && commandText && copyStatus) {
+      copyButton.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(commandText.textContent ?? '');
+          copyStatus.textContent = 'Copied to clipboard';
+        } catch {
+          copyStatus.textContent = 'Clipboard unavailable';
+        }
+
+        window.setTimeout(() => {
+          copyStatus.textContent = 'Copy command';
+        }, 1800);
+      });
+    }
+  }
+</script>

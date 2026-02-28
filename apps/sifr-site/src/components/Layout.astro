@@ -1,5 +1,101 @@
 ---
 import Header from './Header.astro';
+
+type JsonLdEntry = Record<string, unknown>;
+
+type Props = {
+  title?: string;
+  description?: string;
+  canonical?: string;
+  image?: string;
+  imageAlt?: string;
+  type?: 'website' | 'article';
+  locale?: string;
+  siteName?: string;
+  keywords?: string[];
+  noindex?: boolean;
+  publishedTime?: string;
+  modifiedTime?: string;
+  author?: string;
+  twitterSite?: string;
+  twitterCreator?: string;
+  jsonLd?: JsonLdEntry | JsonLdEntry[];
+  stickyHeader?: boolean;
+};
+
+const defaultTitle = 'Sifr';
+const defaultDescription =
+  'Sifr is a compact, safe language for people who want Python-like ergonomics with Rust-level execution speed.';
+const defaultImage = '/logo.webp';
+
+const {
+  title = defaultTitle,
+  description = defaultDescription,
+  canonical,
+  image = defaultImage,
+  imageAlt,
+  type = 'website',
+  locale = 'en_US',
+  siteName = 'Sifr',
+  keywords = [],
+  noindex = false,
+  publishedTime,
+  modifiedTime,
+  author,
+  twitterSite,
+  twitterCreator,
+  jsonLd,
+  stickyHeader = true,
+} = Astro.props as Props;
+
+const site = Astro.site ?? new URL(Astro.url.origin);
+const canonicalUrl = new URL(canonical ?? Astro.url.pathname, site).toString();
+const imageUrl = new URL(image, site).toString();
+const robots = noindex ? 'noindex, nofollow' : 'index, follow';
+const keywordContent = keywords.length > 0 ? keywords.join(', ') : null;
+const twitterCard = image ? 'summary_large_image' : 'summary';
+
+const baseJsonLd: JsonLdEntry =
+  type === 'article'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: title,
+        description,
+        image: imageUrl,
+        mainEntityOfPage: canonicalUrl,
+        datePublished: publishedTime,
+        dateModified: modifiedTime ?? publishedTime,
+        author: author
+          ? {
+              '@type': 'Person',
+              name: author,
+            }
+          : {
+              '@type': 'Organization',
+              name: siteName,
+            },
+        publisher: {
+          '@type': 'Organization',
+          name: siteName,
+          logo: {
+            '@type': 'ImageObject',
+            url: new URL('/logo.webp', site).toString(),
+          },
+        },
+      }
+    : {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: title,
+        description,
+        url: canonicalUrl,
+      };
+
+const jsonLdEntries = [
+  baseJsonLd,
+  ...(Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : []),
+];
 ---
 
 <!doctype html>
@@ -7,21 +103,68 @@ import Header from './Header.astro';
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{Astro.props.title ?? 'Sifr'}</title>
-    <meta
-      name="description"
-      content="Sifr — Python syntax, Rust performance."
-    />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={robots} />
+    <meta name="theme-color" content="#0f62fe" />
+    {keywordContent && <meta name="keywords" content={keywordContent} />}
+
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:locale" content={locale} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:secure_url" content={imageUrl} />
+    <meta property="og:image:alt" content={imageAlt ?? title} />
+    {type === 'article' && publishedTime && (
+      <meta property="article:published_time" content={publishedTime} />
+    )}
+    {type === 'article' && modifiedTime && (
+      <meta property="article:modified_time" content={modifiedTime} />
+    )}
+    {type === 'article' && modifiedTime && (
+      <meta property="og:updated_time" content={modifiedTime} />
+    )}
+    {type === 'article' && author && (
+      <meta property="article:author" content={author} />
+    )}
+    {author && <meta name="author" content={author} />}
+
+    <meta name="twitter:card" content={twitterCard} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+    <meta name="twitter:image:alt" content={imageAlt ?? title} />
+    {twitterSite && <meta name="twitter:site" content={twitterSite} />}
+    {twitterCreator && <meta name="twitter:creator" content={twitterCreator} />}
+
+    {jsonLdEntries.map((entry) => (
+      <script
+        type="application/ld+json"
+        set:html={JSON.stringify(entry).replace(/</g, '\\u003c')}
+      />
+    ))}
+
     <link rel="stylesheet" href="/styles/global.css" />
   </head>
   <body>
-    <Header />
+    <Header sticky={stickyHeader} />
     <main>
       <slot />
     </main>
     <footer>
       <p>
-        Sifr — Python syntax, Rust performance.
+        Sifr - Python syntax, Rust performance.
         <a
           href="https://github.com/yaseralnajjar/sifr"
           target="_blank"

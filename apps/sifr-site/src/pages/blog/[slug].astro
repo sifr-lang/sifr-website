@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import Layout from '../../components/Layout.astro';
+import { estimateReadingMinutes } from '../../utils/readingTime';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -18,34 +19,40 @@ type Props = {
 const { post } = Astro.props as Props;
 const { Content, headings } = await post.render();
 
-const wordCount = post.body
-  .replace(/```[\s\S]*?```/g, ' ')
-  .replace(/`[^`]*`/g, ' ')
-  .replace(/\[(.*?)\]\(.*?\)/g, '$1')
-  .split(/\s+/)
-  .filter(Boolean).length;
-const readingMinutes = Math.max(1, Math.round(wordCount / 220));
+const readingMinutes = estimateReadingMinutes(post.body);
 
 const tableOfContents = headings
-  .filter((heading) => heading.depth === 2 || heading.depth === 3)
+  .filter((heading) => heading.depth === 1 || heading.depth === 2)
   .map((heading) => ({
     id: heading.slug,
     label: heading.text,
-    depth: heading.depth as 2 | 3,
+    depth: heading.depth as 1 | 2,
   }));
 
-const sourceHost = post.data.sourceUrl
-  ? new URL(post.data.sourceUrl).host.replace(/^www\./, '')
-  : null;
+const canonicalPath = `/blog/${post.slug}`;
+const articlePublished = post.data.date.toISOString();
+const articleModified = (post.data.updated ?? post.data.date).toISOString();
+const articleKeywords = ['sifr', 'blog', ...(post.data.keywords ?? [])];
 ---
 
-<Layout title={`${post.data.title} | Sifr blog`}>
+<Layout
+  title={`${post.data.title} | Sifr blog`}
+  description={post.data.excerpt}
+  canonical={canonicalPath}
+  image={post.data.ogImage ?? '/logo.webp'}
+  imageAlt={post.data.ogImageAlt ?? post.data.title}
+  type="article"
+  author={post.data.author}
+  publishedTime={articlePublished}
+  modifiedTime={articleModified}
+  keywords={articleKeywords}
+  stickyHeader={false}
+>
   <section class="blog-post-shell">
     <div class="blog-post-wrapper">
-      <a href="/blog" class="back-link">← Back to blog</a>
       <article class="blog-article">
         <header class="blog-header">
-          <p class="blog-eyebrow">Engineering Notes</p>
+          <p class="blog-eyebrow">{post.data.eyebrow ?? 'Engineering Notes'}</p>
           <h1>{post.data.title}</h1>
           <div class="blog-meta">
             <time datetime={post.data.date.toISOString()}>
@@ -59,17 +66,10 @@ const sourceHost = post.data.sourceUrl
             </time>
             <span class="blog-meta-divider" aria-hidden="true">•</span>
             <span>{readingMinutes} min read</span>
-            {sourceHost && (
+            {post.data.author && (
               <>
                 <span class="blog-meta-divider" aria-hidden="true">•</span>
-                <a
-                  class="blog-source-link"
-                  href={post.data.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  Source: {sourceHost}
-                </a>
+                <span class="blog-author">By {post.data.author}</span>
               </>
             )}
           </div>
@@ -84,7 +84,7 @@ const sourceHost = post.data.sourceUrl
         <p class="blog-toc-title">On this page</p>
         <ul>
           {tableOfContents.map((item) => (
-            <li class:list={{ 'toc-subitem': item.depth === 3 }}>
+            <li class:list={{ 'toc-subitem': item.depth === 2 }}>
               <a href={`#${item.id}`}>{item.label}</a>
             </li>
           ))}
@@ -93,3 +93,523 @@ const sourceHost = post.data.sourceUrl
     )}
   </section>
 </Layout>
+
+<script is:inline>
+  (() => {
+    const content = document.querySelector('.blog-content');
+    if (!content) return;
+
+    const inferTabLabel = (pre, index, language) => {
+      const firstLine = (pre.textContent || '')
+        .split('\n')
+        .map((line) => line.trim())
+        .find(Boolean);
+
+      const command = (firstLine || '')
+        .replace(/^[$>#]\s*/, '')
+        .split(/\s+/)[0]
+        ?.toLowerCase();
+
+      const commandLabels = {
+        brew: 'brew',
+        bun: 'bun',
+        cargo: 'cargo',
+        curl: 'curl',
+        deno: 'deno',
+        docker: 'docker',
+        npm: 'npm',
+        pnpm: 'pnpm',
+        powershell: 'powershell',
+        pwsh: 'powershell',
+        scoop: 'scoop',
+        yarn: 'yarn',
+      };
+
+      if (command && commandLabels[command]) {
+        return commandLabels[command];
+      }
+
+      if (language && language !== 'plaintext') {
+        return language.toLowerCase();
+      }
+
+      return `option ${index + 1}`;
+    };
+
+    const buildCodeTabs = (group, groupIndex, explicitLabels = []) => {
+      if (group.length < 2) return;
+
+      const parent = group[0].parentElement;
+      if (!parent) return;
+      const insertionPoint = group[0];
+
+      const container = document.createElement('section');
+      container.className = 'code-tabs';
+
+      const tabList = document.createElement('div');
+      tabList.className = 'code-tab-list';
+      tabList.setAttribute('role', 'tablist');
+
+      const panels = document.createElement('div');
+      panels.className = 'code-tab-panels';
+
+      const labelCounts = new Map();
+      parent.insertBefore(container, insertionPoint);
+
+      group.forEach((pre, itemIndex) => {
+        const language = pre.getAttribute('data-language') || 'plaintext';
+        const explicitLabel = explicitLabels[itemIndex]?.trim();
+        const baseLabel =
+          explicitLabel && explicitLabel.length > 0
+            ? explicitLabel
+            : inferTabLabel(pre, itemIndex, language);
+        const seen = labelCounts.get(baseLabel) || 0;
+        labelCounts.set(baseLabel, seen + 1);
+        const label = seen === 0 ? baseLabel : `${baseLabel} ${seen + 1}`;
+
+        const tabId = `code-tab-${groupIndex}-${itemIndex}`;
+        const panelId = `code-tab-panel-${groupIndex}-${itemIndex}`;
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'code-tab-trigger';
+        button.id = tabId;
+        button.setAttribute('role', 'tab');
+        button.setAttribute('aria-controls', panelId);
+        button.setAttribute('aria-selected', itemIndex === 0 ? 'true' : 'false');
+        button.tabIndex = itemIndex === 0 ? 0 : -1;
+        button.textContent = label;
+
+        const panel = document.createElement('div');
+        panel.className = 'code-tab-panel';
+        panel.id = panelId;
+        panel.setAttribute('role', 'tabpanel');
+        panel.setAttribute('aria-labelledby', tabId);
+        panel.hidden = itemIndex !== 0;
+        panel.appendChild(pre);
+
+        button.addEventListener('click', () => {
+          const triggers = tabList.querySelectorAll('.code-tab-trigger');
+          const tabPanels = panels.querySelectorAll('.code-tab-panel');
+
+          triggers.forEach((trigger, triggerIndex) => {
+            const isActive = triggerIndex === itemIndex;
+            trigger.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            trigger.tabIndex = isActive ? 0 : -1;
+          });
+
+          tabPanels.forEach((tabPanel, panelIndex) => {
+            tabPanel.hidden = panelIndex !== itemIndex;
+          });
+        });
+
+        tabList.appendChild(button);
+        panels.appendChild(panel);
+      });
+
+      container.appendChild(tabList);
+      container.appendChild(panels);
+    };
+
+    const directChildren = Array.from(content.children);
+    let pointer = 0;
+    let groupIndex = 0;
+    const tabMarkerPattern = /^\[!code-tabs\s+(.+)\]$/i;
+    const parseLabels = (raw) =>
+      raw
+        .split(/[|,]/)
+        .map((label) => label.trim())
+        .filter(Boolean);
+
+    while (pointer < directChildren.length) {
+      const current = directChildren[pointer];
+
+      if (current.tagName === 'P') {
+        const text = (current.textContent || '').trim();
+        const markerMatch = text.match(tabMarkerPattern);
+
+        if (markerMatch) {
+          const explicitLabels = parseLabels(markerMatch[1]);
+          const preGroup = [];
+          let cursor = pointer + 1;
+
+          while (cursor < directChildren.length && directChildren[cursor].tagName === 'PRE') {
+            preGroup.push(directChildren[cursor]);
+            cursor += 1;
+          }
+
+          if (preGroup.length >= 2) {
+            buildCodeTabs(preGroup, groupIndex, explicitLabels);
+            current.remove();
+            groupIndex += 1;
+            pointer = cursor;
+            continue;
+          }
+        }
+      }
+
+      if (current.tagName !== 'PRE') {
+        pointer += 1;
+        continue;
+      }
+
+      const preGroup = [];
+      let cursor = pointer;
+
+      while (cursor < directChildren.length && directChildren[cursor].tagName === 'PRE') {
+        preGroup.push(directChildren[cursor]);
+        cursor += 1;
+      }
+
+      buildCodeTabs(preGroup, groupIndex);
+      groupIndex += 1;
+      pointer = cursor;
+    }
+
+    const copyText = async (text) => {
+      if (navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          // Fall through to legacy copy path.
+        }
+      }
+
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', 'true');
+        textarea.style.position = 'absolute';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        const copied = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        return copied;
+      } catch {
+        return false;
+      }
+    };
+
+    const enhanceCodeBlockWithCopy = (pre) => {
+      if (!(pre instanceof HTMLElement) || pre.dataset.copyButtonReady === 'true') {
+        return;
+      }
+
+      pre.dataset.copyButtonReady = 'true';
+      pre.classList.add('has-copy-button');
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'code-copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      const resetState = () => {
+        button.classList.remove('is-copied', 'is-failed');
+        button.textContent = 'Copy';
+      };
+
+      let resetTimerId = null;
+
+      button.addEventListener('click', async () => {
+        const codeNode = pre.querySelector('code');
+        const codeText = (codeNode?.textContent ?? pre.textContent ?? '').replace(/\n$/, '');
+        const copied = await copyText(codeText);
+
+        if (resetTimerId !== null) {
+          window.clearTimeout(resetTimerId);
+        }
+
+        if (copied) {
+          button.classList.remove('is-failed');
+          button.classList.add('is-copied');
+          button.textContent = 'Copied';
+        } else {
+          button.classList.remove('is-copied');
+          button.classList.add('is-failed');
+          button.textContent = 'Failed';
+        }
+
+        resetTimerId = window.setTimeout(resetState, 1400);
+      });
+
+      pre.appendChild(button);
+    };
+
+    content.querySelectorAll('pre').forEach(enhanceCodeBlockWithCopy);
+
+    const setupTocSpy = () => {
+      const toc = document.querySelector('.blog-toc');
+      if (!toc) return;
+
+      const items = Array.from(toc.querySelectorAll('a[href^="#"]'))
+        .map((link) => {
+          const id = decodeURIComponent((link.getAttribute('href') || '').slice(1));
+          return {
+            id,
+            link,
+            section: document.getElementById(id),
+          };
+        })
+        .filter((item) => item.section);
+
+      if (items.length === 0) return;
+
+      let activeId = '';
+
+      const setActive = (nextId) => {
+        if (!nextId || nextId === activeId) return;
+        activeId = nextId;
+
+        items.forEach((item) => {
+          const isActive = item.id === nextId;
+          item.link.classList.toggle('is-active', isActive);
+          item.link.parentElement?.classList.toggle('is-active', isActive);
+        });
+      };
+
+      const updateActive = () => {
+        const topOffset = window.scrollY + 180;
+        let currentId = items[0].id;
+
+        items.forEach((item) => {
+          if (item.section.offsetTop <= topOffset) {
+            currentId = item.id;
+          }
+        });
+
+        setActive(currentId);
+      };
+
+      let ticking = false;
+      const onScroll = () => {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(() => {
+          updateActive();
+          ticking = false;
+        });
+      };
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll);
+      updateActive();
+    };
+
+    setupTocSpy();
+
+    const getTweetInfo = (href) => {
+      try {
+        const url = new URL(href, window.location.origin);
+        const hostname = url.hostname.replace(/^www\./, '');
+
+        if (hostname !== 'twitter.com' && hostname !== 'x.com') {
+          return null;
+        }
+
+        const match = url.pathname.match(/^\/([^/]+)\/status\/(\d+)/);
+        if (!match) return null;
+
+        return {
+          tweetId: match[2],
+          canonicalUrl: `https://twitter.com/${match[1]}/status/${match[2]}`,
+        };
+      } catch {
+        return null;
+      }
+    };
+
+    const createTweetEmbedElement = (tweetInfo) => {
+      const embed = document.createElement('figure');
+      embed.className = 'tweet-embed';
+      embed.dataset.tweetId = tweetInfo.tweetId;
+
+      const fallbackLink = document.createElement('a');
+      fallbackLink.href = tweetInfo.canonicalUrl;
+      fallbackLink.target = '_blank';
+      fallbackLink.rel = 'noreferrer noopener';
+      fallbackLink.textContent = 'View post on X';
+      embed.appendChild(fallbackLink);
+
+      return embed;
+    };
+
+    const getYouTubeInfo = (href) => {
+      try {
+        const url = new URL(href, window.location.origin);
+        const hostname = url.hostname.replace(/^www\./, '');
+        let videoId = '';
+
+        if (hostname === 'youtu.be') {
+          videoId = url.pathname.split('/').filter(Boolean)[0] ?? '';
+        } else if (
+          hostname === 'youtube.com' ||
+          hostname === 'm.youtube.com' ||
+          hostname === 'youtube-nocookie.com'
+        ) {
+          if (url.pathname === '/watch') {
+            videoId = url.searchParams.get('v') ?? '';
+          } else if (url.pathname.startsWith('/shorts/')) {
+            videoId = url.pathname.split('/')[2] ?? '';
+          } else if (url.pathname.startsWith('/embed/')) {
+            videoId = url.pathname.split('/')[2] ?? '';
+          }
+        }
+
+        if (!/^[A-Za-z0-9_-]{11}$/.test(videoId)) {
+          return null;
+        }
+
+        return {
+          videoId,
+          canonicalUrl: `https://www.youtube.com/watch?v=${videoId}`,
+        };
+      } catch {
+        return null;
+      }
+    };
+
+    const createYouTubeEmbedElement = (videoInfo) => {
+      const embed = document.createElement('figure');
+      embed.className = 'video-embed';
+
+      const iframe = document.createElement('iframe');
+      iframe.className = 'video-embed-frame';
+      iframe.src = `https://www.youtube-nocookie.com/embed/${videoInfo.videoId}?rel=0`;
+      iframe.title = 'Embedded YouTube video';
+      iframe.loading = 'lazy';
+      iframe.allow =
+        'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+      iframe.allowFullscreen = true;
+
+      embed.appendChild(iframe);
+      return embed;
+    };
+
+    const ensureTwitterWidgets = () => {
+      if (window.twttr?.widgets?.createTweet) {
+        return Promise.resolve(window.twttr);
+      }
+
+      const existingScript = document.querySelector('script[data-twitter-widgets]');
+      if (existingScript) {
+        return new Promise((resolve) => {
+          existingScript.addEventListener('load', () => resolve(window.twttr), { once: true });
+          existingScript.addEventListener('error', () => resolve(null), { once: true });
+        });
+      }
+
+      return new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.src = 'https://platform.twitter.com/widgets.js';
+        script.async = true;
+        script.setAttribute('data-twitter-widgets', 'true');
+        script.addEventListener('load', () => resolve(window.twttr), { once: true });
+        script.addEventListener('error', () => resolve(null), { once: true });
+        document.body.appendChild(script);
+      });
+    };
+
+    const hydrateTweetEmbeds = (twttr, embeds) => {
+      if (!twttr?.widgets?.createTweet) return;
+
+      embeds.forEach((embed) => {
+        const tweetId = embed.dataset.tweetId;
+        if (!tweetId) return;
+
+        const fallbackLink = embed.querySelector('a');
+        embed.textContent = '';
+
+        twttr.widgets
+          .createTweet(tweetId, embed, {
+            dnt: true,
+            align: 'center',
+            lang: 'en',
+          })
+          .catch(() => {
+            if (fallbackLink) {
+              embed.textContent = '';
+              embed.appendChild(fallbackLink);
+            }
+          });
+      });
+    };
+
+    let embeddedTweetCount = 0;
+    const embeddedTweetNodes = [];
+    const extractTweetUrlFromMarker = (rawText) => {
+      const markerMatch = rawText.match(/^\[!tweet\s+(.+)\]$/i);
+      if (!markerMatch) return null;
+
+      const urlMatch = markerMatch[1].match(
+        /https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/[^\s\]]+/i,
+      );
+
+      return urlMatch ? urlMatch[0] : null;
+    };
+
+    const extractYouTubeUrlFromMarker = (rawText) => {
+      const markerMatch = rawText.match(/^\[!youtube\s+(.+)\]$/i);
+      if (!markerMatch) return null;
+
+      const urlMatch = markerMatch[1].match(
+        /https?:\/\/(?:www\.|m\.)?(?:youtube\.com|youtu\.be|youtube-nocookie\.com)\/[^\s\]]+/i,
+      );
+
+      return urlMatch ? urlMatch[0] : null;
+    };
+
+    content.querySelectorAll('p').forEach((paragraph) => {
+      const markerUrl = extractYouTubeUrlFromMarker((paragraph.textContent || '').trim());
+      if (!markerUrl) return;
+
+      const videoInfo = getYouTubeInfo(markerUrl);
+      if (!videoInfo) return;
+
+      paragraph.replaceWith(createYouTubeEmbedElement(videoInfo));
+    });
+
+    content.querySelectorAll('p').forEach((paragraph) => {
+      const markerUrl = extractTweetUrlFromMarker((paragraph.textContent || '').trim());
+      if (!markerUrl) return;
+
+      const tweetInfo = getTweetInfo(markerUrl);
+      if (!tweetInfo) return;
+
+      const embedNode = createTweetEmbedElement(tweetInfo);
+      paragraph.replaceWith(embedNode);
+      embeddedTweetNodes.push(embedNode);
+      embeddedTweetCount += 1;
+    });
+
+    const tweetLinks = content.querySelectorAll('a[href*="/status/"]');
+
+    tweetLinks.forEach((link) => {
+      const tweetInfo = getTweetInfo(link.href);
+      if (!tweetInfo) return;
+
+      const paragraph = link.closest('p');
+      if (!paragraph) return;
+
+      if (paragraph.nextElementSibling?.classList.contains('tweet-embed')) {
+        return;
+      }
+
+      const embedNode = createTweetEmbedElement(tweetInfo);
+      paragraph.insertAdjacentElement('afterend', embedNode);
+      embeddedTweetNodes.push(embedNode);
+      embeddedTweetCount += 1;
+    });
+
+    if (embeddedTweetCount === 0) {
+      return;
+    }
+
+    ensureTwitterWidgets().then((twttr) => {
+      hydrateTweetEmbeds(twttr, embeddedTweetNodes);
+    });
+  })();
+</script>
