@@ -27,11 +27,11 @@ const wordCount = post.body
 const readingMinutes = Math.max(1, Math.round(wordCount / 220));
 
 const tableOfContents = headings
-  .filter((heading) => heading.depth === 2 || heading.depth === 3)
+  .filter((heading) => heading.depth === 1 || heading.depth === 2)
   .map((heading) => ({
     id: heading.slug,
     label: heading.text,
-    depth: heading.depth as 2 | 3,
+    depth: heading.depth as 1 | 2,
   }));
 ---
 
@@ -72,7 +72,7 @@ const tableOfContents = headings
         <p class="blog-toc-title">On this page</p>
         <ul>
           {tableOfContents.map((item) => (
-            <li class:list={{ 'toc-subitem': item.depth === 3 }}>
+            <li class:list={{ 'toc-subitem': item.depth === 2 }}>
               <a href={`#${item.id}`}>{item.label}</a>
             </li>
           ))}
