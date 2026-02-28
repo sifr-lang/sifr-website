@@ -93,6 +93,9 @@ a:hover {
 
 .brand img {
   display: block;
+  width: 3rem;
+  height: 3rem;
+  object-fit: contain;
 }
 
 nav ul {
