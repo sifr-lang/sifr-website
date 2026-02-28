@@ -1,0 +1,22 @@
+{
+  "name": "sifr-site",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "dev:wrangler": "npm run build && wrangler dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "deploy": "wrangler deploy",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^5.18.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.6",
+    "wrangler": "^4.69.0"
+  }
+}

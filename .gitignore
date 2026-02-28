@@ -20,3 +20,6 @@ __pycache__/
 
 # Misc
 /tmp/
+dist/
+/apps/*/dist/
+/apps/*/node_modules/

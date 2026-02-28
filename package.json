@@ -1,0 +1,14 @@
+{
+  "name": "sifr-blog-website",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "build:site": "npm run build -w apps/sifr-site",
+    "dev:site:wrangler": "npm run build:site && npm exec -w apps/sifr-site -- wrangler dev -c wrangler.jsonc",
+    "dev:site": "npm run dev -w apps/sifr-site",
+    "deploy:site": "npm run deploy -w apps/sifr-site"
+  }
+}

@@ -1,0 +1,33 @@
+---
+import Layout from '../../components/Layout.astro';
+
+const posts = [
+  {
+    title: 'Sifr release notes: alpha preview',
+    excerpt:
+      'A first look at the project direction and roadmap for a performant Python-compatible toolchain.',
+  },
+  {
+    title: 'Building a language toolchain on top of Rust',
+    excerpt:
+      'Notes from the early prototyping work and why ergonomics matter as much as performance.',
+  },
+];
+---
+
+<Layout title="Sifr blog">
+  <section>
+    <h1>Blog</h1>
+    <ul class="blog-list">
+      {posts.map((post) => (
+        <li>
+          <h2 class="blog-title">
+            <a href="#">{post.title}</a>
+          </h2>
+          <p class="blog-readme">{post.excerpt}</p>
+          <a href="#">Read more</a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Layout>

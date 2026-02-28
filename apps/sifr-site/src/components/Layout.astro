@@ -1,0 +1,34 @@
+---
+import Header from './Header.astro';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{Astro.props.title ?? 'Sifr'}</title>
+    <meta
+      name="description"
+      content="Sifr — Python syntax, Rust performance."
+    />
+    <link rel="stylesheet" href="/styles/global.css" />
+  </head>
+  <body>
+    <Header />
+    <main>
+      <slot />
+    </main>
+    <footer>
+      <p>
+        Sifr — Python syntax, Rust performance.
+        <a
+          href="https://github.com/yaseralnajjar/sifr"
+          target="_blank"
+          rel="noreferrer noopener"
+          >Visit GitHub</a
+        >
+      </p>
+    </footer>
+  </body>
+</html>

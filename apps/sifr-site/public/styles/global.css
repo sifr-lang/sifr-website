@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap');
+
+:root {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --text: #111827;
+  --muted: #4b5563;
+  --accent: #0075ff;
+  --accent-focus: #0a3f99;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Manrope', 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at 20% 0%, #ffffff, #f4f7ff 48%, #fafafa);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--accent);
+}
+
+a:hover,
+a:focus-visible {
+  color: var(--accent-focus);
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.brand img {
+  display: block;
+}
+
+nav ul {
+  display: flex;
+  gap: 1.2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+nav a {
+  text-decoration: none;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+nav a:hover,
+nav a:focus-visible {
+  color: var(--text);
+}
+
+main {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+section {
+  background: var(--surface);
+  border-radius: 1.25rem;
+  padding: clamp(2rem, 5vw, 4rem);
+  border: 1px solid #d7dde8;
+}
+
+.hero-logo {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  line-height: 1.15;
+  margin: 0 0 1rem;
+  color: #0f172a;
+}
+
+h2 {
+  margin-bottom: 1rem;
+  color: #0f172a;
+  font-size: clamp(1.45rem, 3vw, 2rem);
+}
+
+p {
+  margin-top: 0;
+  color: var(--muted);
+  max-width: 70ch;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.button-link,
+.button-link-secondary {
+  display: inline-block;
+  border-radius: 9999px;
+  padding: 0.75rem 1.25rem;
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 120ms ease, background-color 120ms ease, color 120ms ease;
+}
+
+.button-link {
+  background: var(--accent);
+  color: #fff;
+}
+
+.button-link:hover,
+.button-link:focus-visible {
+  background: #005ce6;
+}
+
+.button-link-secondary {
+  border: 1px solid #c7d2fe;
+  color: #1d4ed8;
+}
+
+.button-link-secondary:hover,
+.button-link-secondary:focus-visible {
+  background: #eff6ff;
+}
+
+.blog-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1.2rem;
+}
+
+.blog-list li {
+  border: 1px solid #e2e8f0;
+  border-left: 0.35rem solid var(--accent);
+  border-radius: 0.85rem;
+  padding: 1rem 1.2rem;
+  background: #fff;
+}
+
+.blog-title {
+  margin: 0 0 0.35rem;
+}
+
+.blog-title a {
+  text-decoration: none;
+  color: #111827;
+  font-weight: 700;
+}
+
+.blog-readme {
+  margin-bottom: 0.15rem;
+}
+
+footer {
+  margin-top: 2rem;
+  padding: 1rem 1.5rem 2rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+footer a {
+  margin-left: 0.35rem;
+}
+
+@media (max-width: 640px) {
+  .site-header,
+  .actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

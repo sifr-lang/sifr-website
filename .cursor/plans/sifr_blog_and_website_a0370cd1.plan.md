@@ -65,6 +65,8 @@ sifr-blog-website/                 # Repo root
     sifr-site/                     # First app: marketing site + blog
       public/
         logo.webp                  # Copy from sifr repo or add here
+        styles/
+          global.css
       src/
         components/
           Header.astro
@@ -73,8 +75,6 @@ sifr-blog-website/                 # Repo root
           index.astro
           blog/
             index.astro
-        styles/
-          global.css
       astro.config.mjs
       package.json
       wrangler.jsonc

@@ -1,0 +1,23 @@
+---
+const links = [
+  { href: '/', label: 'Home' },
+  { href: '/blog', label: 'Blog' },
+];
+---
+
+<header class="site-header">
+  <a class="brand" href="/" aria-label="Sifr home">
+    <img src="/logo.webp" alt="Sifr logo" width="44" height="44" />
+    <span>Sifr</span>
+  </a>
+
+  <nav aria-label="Primary">
+    <ul>
+      {links.map((link) => (
+        <li>
+          <a href={link.href}>{link.label}</a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+</header>
