@@ -33,10 +33,6 @@ const tableOfContents = headings
     label: heading.text,
     depth: heading.depth as 2 | 3,
   }));
-
-const sourceHost = post.data.sourceUrl
-  ? new URL(post.data.sourceUrl).host.replace(/^www\./, '')
-  : null;
 ---
 
 <Layout title={`${post.data.title} | Sifr blog`} stickyHeader={false}>
@@ -59,17 +55,10 @@ const sourceHost = post.data.sourceUrl
             </time>
             <span class="blog-meta-divider" aria-hidden="true">•</span>
             <span>{readingMinutes} min read</span>
-            {sourceHost && (
+            {post.data.author && (
               <>
                 <span class="blog-meta-divider" aria-hidden="true">•</span>
-                <a
-                  class="blog-source-link"
-                  href={post.data.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  Source: {sourceHost}
-                </a>
+                <span class="blog-author">By {post.data.author}</span>
               </>
             )}
           </div>

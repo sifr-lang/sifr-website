@@ -26,6 +26,9 @@
             }
           ]
         },
+        "author": {
+          "type": "string"
+        },
         "sourceUrl": {
           "type": "string",
           "format": "uri"

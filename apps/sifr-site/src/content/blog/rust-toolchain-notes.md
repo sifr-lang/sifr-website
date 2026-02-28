@@ -2,6 +2,7 @@
 title: Building a language toolchain on top of Rust
 excerpt: Early prototyping notes and why developer ergonomics matter.
 date: 2026-02-05
+author: "Yaser Alnajjar"
 ---
 
 Choosing Rust for a language toolchain gives us a lot of room for predictable
