@@ -9,6 +9,7 @@ author: "Bun Team"
 
 #### To install Bun
 
+[!code-tabs curl|npm|powershell|scoop|brew|docker]
 
 ```sh
 $ curl -fsSL https://bun.sh/install | bash

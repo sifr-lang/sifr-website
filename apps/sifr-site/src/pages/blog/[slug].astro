@@ -124,11 +124,12 @@ const tableOfContents = headings
       return `option ${index + 1}`;
     };
 
-    const buildCodeTabs = (group, groupIndex) => {
+    const buildCodeTabs = (group, groupIndex, explicitLabels = []) => {
       if (group.length < 2) return;
 
       const parent = group[0].parentElement;
       if (!parent) return;
+      const insertionPoint = group[0];
 
       const container = document.createElement('section');
       container.className = 'code-tabs';
@@ -141,10 +142,15 @@ const tableOfContents = headings
       panels.className = 'code-tab-panels';
 
       const labelCounts = new Map();
+      parent.insertBefore(container, insertionPoint);
 
       group.forEach((pre, itemIndex) => {
         const language = pre.getAttribute('data-language') || 'plaintext';
-        const baseLabel = inferTabLabel(pre, itemIndex, language);
+        const explicitLabel = explicitLabels[itemIndex]?.trim();
+        const baseLabel =
+          explicitLabel && explicitLabel.length > 0
+            ? explicitLabel
+            : inferTabLabel(pre, itemIndex, language);
         const seen = labelCounts.get(baseLabel) || 0;
         labelCounts.set(baseLabel, seen + 1);
         const label = seen === 0 ? baseLabel : `${baseLabel} ${seen + 1}`;
@@ -191,15 +197,44 @@ const tableOfContents = headings
 
       container.appendChild(tabList);
       container.appendChild(panels);
-      parent.insertBefore(container, group[0]);
     };
 
     const directChildren = Array.from(content.children);
     let pointer = 0;
     let groupIndex = 0;
+    const tabMarkerPattern = /^\[!code-tabs\s+(.+)\]$/i;
+    const parseLabels = (raw) =>
+      raw
+        .split(/[|,]/)
+        .map((label) => label.trim())
+        .filter(Boolean);
 
     while (pointer < directChildren.length) {
       const current = directChildren[pointer];
+
+      if (current.tagName === 'P') {
+        const text = (current.textContent || '').trim();
+        const markerMatch = text.match(tabMarkerPattern);
+
+        if (markerMatch) {
+          const explicitLabels = parseLabels(markerMatch[1]);
+          const preGroup = [];
+          let cursor = pointer + 1;
+
+          while (cursor < directChildren.length && directChildren[cursor].tagName === 'PRE') {
+            preGroup.push(directChildren[cursor]);
+            cursor += 1;
+          }
+
+          if (preGroup.length >= 2) {
+            buildCodeTabs(preGroup, groupIndex, explicitLabels);
+            current.remove();
+            groupIndex += 1;
+            pointer = cursor;
+            continue;
+          }
+        }
+      }
 
       if (current.tagName !== 'PRE') {
         pointer += 1;
