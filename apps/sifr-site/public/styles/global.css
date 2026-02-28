@@ -203,7 +203,7 @@ p {
 .install-widget-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 0.9rem;
   flex-wrap: wrap;
   margin-bottom: 0.85rem;
@@ -243,21 +243,9 @@ p {
 }
 
 .install-tab:focus-visible,
-.install-guide-link:focus-visible,
 .install-copy-btn:focus-visible {
   outline: 2px solid #2d6cf5;
   outline-offset: 2px;
-}
-
-.install-guide-link {
-  color: #36518a;
-  text-decoration: none;
-  font-weight: 650;
-  font-size: 0.96rem;
-}
-
-.install-guide-link:hover {
-  color: #0f62fe;
 }
 
 .install-command-shell {
@@ -459,10 +447,6 @@ p {
 
   .install-tab {
     flex: 1;
-  }
-
-  .install-guide-link {
-    font-size: 0.9rem;
   }
 
   .install-command-shell {
