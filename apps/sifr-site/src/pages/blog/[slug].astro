@@ -36,52 +36,49 @@ const tableOfContents = headings
 ---
 
 <Layout title={`${post.data.title} | Sifr blog`} stickyHeader={false}>
-  <section class="blog-post-layout">
-    <a href="/blog" class="back-link">← Back to blog</a>
-    <div class="blog-post-shell">
-      <div class="blog-post-wrapper">
-        <article class="blog-article">
-          <header class="blog-header">
-            <p class="blog-eyebrow">{post.data.eyebrow ?? 'Engineering Notes'}</p>
-            <h1>{post.data.title}</h1>
-            <div class="blog-meta">
-              <time datetime={post.data.date.toISOString()}>
-                {
-                  post.data.date.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })
-                }
-              </time>
-              <span class="blog-meta-divider" aria-hidden="true">•</span>
-              <span>{readingMinutes} min read</span>
-              {post.data.author && (
-                <>
-                  <span class="blog-meta-divider" aria-hidden="true">•</span>
-                  <span class="blog-author">By {post.data.author}</span>
-                </>
-              )}
-            </div>
-          </header>
-          <div class="blog-content">
-            <Content />
+  <section class="blog-post-shell">
+    <div class="blog-post-wrapper">
+      <article class="blog-article">
+        <header class="blog-header">
+          <p class="blog-eyebrow">{post.data.eyebrow ?? 'Engineering Notes'}</p>
+          <h1>{post.data.title}</h1>
+          <div class="blog-meta">
+            <time datetime={post.data.date.toISOString()}>
+              {
+                post.data.date.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })
+              }
+            </time>
+            <span class="blog-meta-divider" aria-hidden="true">•</span>
+            <span>{readingMinutes} min read</span>
+            {post.data.author && (
+              <>
+                <span class="blog-meta-divider" aria-hidden="true">•</span>
+                <span class="blog-author">By {post.data.author}</span>
+              </>
+            )}
           </div>
-        </article>
-      </div>
-      {tableOfContents.length > 0 && (
-        <aside class="blog-toc" aria-label="On this page">
-          <p class="blog-toc-title">On this page</p>
-          <ul>
-            {tableOfContents.map((item) => (
-              <li class:list={{ 'toc-subitem': item.depth === 3 }}>
-                <a href={`#${item.id}`}>{item.label}</a>
-              </li>
-            ))}
-          </ul>
-        </aside>
-      )}
+        </header>
+        <div class="blog-content">
+          <Content />
+        </div>
+      </article>
     </div>
+    {tableOfContents.length > 0 && (
+      <aside class="blog-toc" aria-label="On this page">
+        <p class="blog-toc-title">On this page</p>
+        <ul>
+          {tableOfContents.map((item) => (
+            <li class:list={{ 'toc-subitem': item.depth === 3 }}>
+              <a href={`#${item.id}`}>{item.label}</a>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    )}
   </section>
 </Layout>
 
