@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import Layout from '../../components/Layout.astro';
+import { estimateReadingMinutes } from '../../utils/readingTime';
 
 const posts = (await getCollection('blog')).sort(
   (a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) =>
@@ -14,19 +15,6 @@ const formatDate = (date: Date): string =>
     month: 'long',
     day: 'numeric',
   });
-
-const estimateReadingMinutes = (body: string): number =>
-  Math.max(
-    1,
-    Math.round(
-      body
-        .replace(/```[\s\S]*?```/g, ' ')
-        .replace(/`[^`]*`/g, ' ')
-        .replace(/\[(.*?)\]\(.*?\)/g, '$1')
-        .split(/\s+/)
-        .filter(Boolean).length / 220,
-    ),
-  );
 
 const postsWithMeta = posts.map((post: CollectionEntry<'blog'>) => ({
   post,

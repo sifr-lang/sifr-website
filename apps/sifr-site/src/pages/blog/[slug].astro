@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import Layout from '../../components/Layout.astro';
+import { estimateReadingMinutes } from '../../utils/readingTime';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -18,13 +19,7 @@ type Props = {
 const { post } = Astro.props as Props;
 const { Content, headings } = await post.render();
 
-const wordCount = post.body
-  .replace(/```[\s\S]*?```/g, ' ')
-  .replace(/`[^`]*`/g, ' ')
-  .replace(/\[(.*?)\]\(.*?\)/g, '$1')
-  .split(/\s+/)
-  .filter(Boolean).length;
-const readingMinutes = Math.max(1, Math.round(wordCount / 220));
+const readingMinutes = estimateReadingMinutes(post.body);
 
 const tableOfContents = headings
   .filter((heading) => heading.depth === 1 || heading.depth === 2)
