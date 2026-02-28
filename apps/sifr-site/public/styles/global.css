@@ -311,6 +311,11 @@ footer a:hover {
 }
 
 /* Blog Post Specifics */
+.blog-post-layout {
+  display: grid;
+  gap: 1rem;
+}
+
 .blog-post-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 17rem;
@@ -326,7 +331,7 @@ footer a:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0;
   padding: 0.4rem 0.75rem;
   border-radius: 999px;
   border: 1px solid var(--border);
