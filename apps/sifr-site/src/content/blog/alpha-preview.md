@@ -2,6 +2,7 @@
 title: "Sifr release notes: alpha preview"
 excerpt: A first look at project direction and the near-term roadmap.
 date: 2026-02-15
+eyebrow: "Release Notes"
 author: "Yaser Alnajjar"
 ---
 

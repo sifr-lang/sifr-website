@@ -26,6 +26,9 @@
             }
           ]
         },
+        "eyebrow": {
+          "type": "string"
+        },
         "author": {
           "type": "string"
         },

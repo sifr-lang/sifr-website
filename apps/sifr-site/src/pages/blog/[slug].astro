@@ -41,7 +41,7 @@ const tableOfContents = headings
       <a href="/blog" class="back-link">← Back to blog</a>
       <article class="blog-article">
         <header class="blog-header">
-          <p class="blog-eyebrow">Engineering Notes</p>
+          <p class="blog-eyebrow">{post.data.eyebrow ?? 'Engineering Notes'}</p>
           <h1>{post.data.title}</h1>
           <div class="blog-meta">
             <time datetime={post.data.date.toISOString()}>
