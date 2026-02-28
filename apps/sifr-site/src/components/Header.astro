@@ -3,9 +3,15 @@ const links = [
   { href: '/', label: 'Home' },
   { href: '/blog', label: 'Blog' },
 ];
+
+type Props = {
+  sticky?: boolean;
+};
+
+const { sticky = true } = Astro.props as Props;
 ---
 
-<header class="site-header">
+<header class:list={['site-header', { 'site-header-static': !sticky }]}>
   <div class="header-container">
     <a class="brand" href="/" aria-label="Sifr home">
       <img src="/logo.webp" alt="Sifr logo" width="40" height="40" />

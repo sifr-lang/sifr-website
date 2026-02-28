@@ -64,6 +64,12 @@ a:hover {
   align-items: center;
 }
 
+.site-header.site-header-static {
+  position: static;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 .header-container {
   display: flex;
   align-items: center;

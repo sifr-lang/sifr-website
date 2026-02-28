@@ -1,5 +1,12 @@
 ---
 import Header from './Header.astro';
+
+type Props = {
+  title?: string;
+  stickyHeader?: boolean;
+};
+
+const { title, stickyHeader = true } = Astro.props as Props;
 ---
 
 <!doctype html>
@@ -7,7 +14,7 @@ import Header from './Header.astro';
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{Astro.props.title ?? 'Sifr'}</title>
+    <title>{title ?? 'Sifr'}</title>
     <meta
       name="description"
       content="Sifr — Python syntax, Rust performance."
@@ -15,7 +22,7 @@ import Header from './Header.astro';
     <link rel="stylesheet" href="/styles/global.css" />
   </head>
   <body>
-    <Header />
+    <Header sticky={stickyHeader} />
     <main>
       <slot />
     </main>
