@@ -15,7 +15,7 @@
   --accent-text: #ffffff;
 
   --header-bg: rgba(244, 247, 251, 0.82);
-  --header-height: 64px;
+  --header-height: 72px;
   --shadow-soft: 0 14px 36px -22px rgba(15, 23, 42, 0.32);
 }
 
@@ -93,9 +93,12 @@ a:hover {
 
 .brand img {
   display: block;
-  width: 3rem;
-  height: 3rem;
-  object-fit: contain;
+  width: 2.6rem;
+  height: 2.6rem;
+  max-width: none;
+  object-fit: cover;
+  object-position: 37% 50%;
+  transform: translateY(0.5px);
 }
 
 nav ul {
@@ -341,8 +344,18 @@ footer a:hover {
 }
 
 @media (max-width: 640px) {
+  :root {
+    --header-height: 66px;
+  }
+
   .header-container {
     padding: 0 1rem;
+  }
+
+  .brand img {
+    width: 2.25rem;
+    height: 2.25rem;
+    object-position: 37% 50%;
   }
   
   nav ul {
