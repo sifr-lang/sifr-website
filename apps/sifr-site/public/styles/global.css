@@ -287,8 +287,13 @@ p {
   white-space: nowrap;
   overflow-x: auto;
   padding-bottom: 0.12rem;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   flex: 1;
+}
+
+.install-command-text::-webkit-scrollbar {
+  display: none;
 }
 
 .install-copy-btn {
