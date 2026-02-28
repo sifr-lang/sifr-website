@@ -82,3 +82,142 @@ const tableOfContents = headings
     )}
   </section>
 </Layout>
+
+<script is:inline>
+  (() => {
+    const content = document.querySelector('.blog-content');
+    if (!content) return;
+
+    const inferTabLabel = (pre, index, language) => {
+      const firstLine = (pre.textContent || '')
+        .split('\n')
+        .map((line) => line.trim())
+        .find(Boolean);
+
+      const command = (firstLine || '')
+        .replace(/^[$>#]\s*/, '')
+        .split(/\s+/)[0]
+        ?.toLowerCase();
+
+      const commandLabels = {
+        brew: 'brew',
+        bun: 'bun',
+        cargo: 'cargo',
+        curl: 'curl',
+        deno: 'deno',
+        docker: 'docker',
+        npm: 'npm',
+        pnpm: 'pnpm',
+        powershell: 'powershell',
+        pwsh: 'powershell',
+        scoop: 'scoop',
+        yarn: 'yarn',
+      };
+
+      if (command && commandLabels[command]) {
+        return commandLabels[command];
+      }
+
+      if (language && language !== 'plaintext') {
+        return language.toLowerCase();
+      }
+
+      return `option ${index + 1}`;
+    };
+
+    const buildCodeTabs = (group, groupIndex) => {
+      if (group.length < 2) return;
+
+      const parent = group[0].parentElement;
+      if (!parent) return;
+
+      const container = document.createElement('section');
+      container.className = 'code-tabs';
+
+      const tabList = document.createElement('div');
+      tabList.className = 'code-tab-list';
+      tabList.setAttribute('role', 'tablist');
+
+      const panels = document.createElement('div');
+      panels.className = 'code-tab-panels';
+
+      const labelCounts = new Map();
+
+      group.forEach((pre, itemIndex) => {
+        const language = pre.getAttribute('data-language') || 'plaintext';
+        const baseLabel = inferTabLabel(pre, itemIndex, language);
+        const seen = labelCounts.get(baseLabel) || 0;
+        labelCounts.set(baseLabel, seen + 1);
+        const label = seen === 0 ? baseLabel : `${baseLabel} ${seen + 1}`;
+
+        const tabId = `code-tab-${groupIndex}-${itemIndex}`;
+        const panelId = `code-tab-panel-${groupIndex}-${itemIndex}`;
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'code-tab-trigger';
+        button.id = tabId;
+        button.setAttribute('role', 'tab');
+        button.setAttribute('aria-controls', panelId);
+        button.setAttribute('aria-selected', itemIndex === 0 ? 'true' : 'false');
+        button.tabIndex = itemIndex === 0 ? 0 : -1;
+        button.textContent = label;
+
+        const panel = document.createElement('div');
+        panel.className = 'code-tab-panel';
+        panel.id = panelId;
+        panel.setAttribute('role', 'tabpanel');
+        panel.setAttribute('aria-labelledby', tabId);
+        panel.hidden = itemIndex !== 0;
+        panel.appendChild(pre);
+
+        button.addEventListener('click', () => {
+          const triggers = tabList.querySelectorAll('.code-tab-trigger');
+          const tabPanels = panels.querySelectorAll('.code-tab-panel');
+
+          triggers.forEach((trigger, triggerIndex) => {
+            const isActive = triggerIndex === itemIndex;
+            trigger.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            trigger.tabIndex = isActive ? 0 : -1;
+          });
+
+          tabPanels.forEach((tabPanel, panelIndex) => {
+            tabPanel.hidden = panelIndex !== itemIndex;
+          });
+        });
+
+        tabList.appendChild(button);
+        panels.appendChild(panel);
+      });
+
+      container.appendChild(tabList);
+      container.appendChild(panels);
+      parent.insertBefore(container, group[0]);
+    };
+
+    const directChildren = Array.from(content.children);
+    let pointer = 0;
+    let groupIndex = 0;
+
+    while (pointer < directChildren.length) {
+      const current = directChildren[pointer];
+
+      if (current.tagName !== 'PRE') {
+        pointer += 1;
+        continue;
+      }
+
+      const preGroup = [];
+      let cursor = pointer;
+
+      while (cursor < directChildren.length && directChildren[cursor].tagName === 'PRE') {
+        preGroup.push(directChildren[cursor]);
+        cursor += 1;
+      }
+
+      buildCodeTabs(preGroup, groupIndex);
+      groupIndex += 1;
+      pointer = cursor;
+    }
+  })();
+</script>
