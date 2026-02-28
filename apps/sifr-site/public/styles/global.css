@@ -615,6 +615,23 @@ footer a:hover {
 
 .blog-toc li {
   margin: 0;
+  position: relative;
+}
+
+.blog-toc li::before {
+  content: '';
+  position: absolute;
+  left: -0.95rem;
+  top: 0.28rem;
+  width: 2px;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: transparent;
+  transition: background-color 0.2s ease;
+}
+
+.blog-toc li.is-active::before {
+  background: #d946ef;
 }
 
 .blog-toc a {
@@ -625,16 +642,26 @@ footer a:hover {
   font-size: 0.86rem;
   line-height: 1.35;
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease;
 }
 
 .blog-toc a:hover {
   color: var(--text);
 }
 
+.blog-toc a.is-active {
+  color: var(--text);
+  background: rgba(15, 98, 254, 0.09);
+  font-weight: 700;
+}
+
 .blog-toc .toc-subitem a {
   padding-left: 0.75rem;
   color: #64748b;
+}
+
+.blog-toc .toc-subitem.is-active a {
+  color: #475569;
 }
 
 @media (max-width: 1080px) {

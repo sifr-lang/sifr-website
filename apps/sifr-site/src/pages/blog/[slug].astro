@@ -219,6 +219,66 @@ const tableOfContents = headings
       pointer = cursor;
     }
 
+    const setupTocSpy = () => {
+      const toc = document.querySelector('.blog-toc');
+      if (!toc) return;
+
+      const items = Array.from(toc.querySelectorAll('a[href^="#"]'))
+        .map((link) => {
+          const id = decodeURIComponent((link.getAttribute('href') || '').slice(1));
+          return {
+            id,
+            link,
+            section: document.getElementById(id),
+          };
+        })
+        .filter((item) => item.section);
+
+      if (items.length === 0) return;
+
+      let activeId = '';
+
+      const setActive = (nextId) => {
+        if (!nextId || nextId === activeId) return;
+        activeId = nextId;
+
+        items.forEach((item) => {
+          const isActive = item.id === nextId;
+          item.link.classList.toggle('is-active', isActive);
+          item.link.parentElement?.classList.toggle('is-active', isActive);
+        });
+      };
+
+      const updateActive = () => {
+        const topOffset = window.scrollY + 180;
+        let currentId = items[0].id;
+
+        items.forEach((item) => {
+          if (item.section.offsetTop <= topOffset) {
+            currentId = item.id;
+          }
+        });
+
+        setActive(currentId);
+      };
+
+      let ticking = false;
+      const onScroll = () => {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(() => {
+          updateActive();
+          ticking = false;
+        });
+      };
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll);
+      updateActive();
+    };
+
+    setupTocSpy();
+
     const normalizeTweetUrl = (href) => {
       try {
         const url = new URL(href, window.location.origin);
