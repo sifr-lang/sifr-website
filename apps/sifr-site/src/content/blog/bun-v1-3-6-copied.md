@@ -2,9 +2,8 @@
 title: "Bun v1.3.6"
 excerpt: "Fixes 45 issues (addressing 125 👍), including Bun.Archive, Bun.JSONC, build metafile/files support, major performance wins, and expanded Node.js compatibility."
 date: 2026-01-13
+sourceUrl: "https://bun.com/blog/bun-v1.3.6"
 ---
-
-Source: [bun.com/blog/bun-v1.3.6](https://bun.com/blog/bun-v1.3.6)
 
 
 #### To install Bun

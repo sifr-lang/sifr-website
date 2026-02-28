@@ -16,30 +16,80 @@ type Props = {
 };
 
 const { post } = Astro.props as Props;
-const { Content } = await post.render();
+const { Content, headings } = await post.render();
+
+const wordCount = post.body
+  .replace(/```[\s\S]*?```/g, ' ')
+  .replace(/`[^`]*`/g, ' ')
+  .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+  .split(/\s+/)
+  .filter(Boolean).length;
+const readingMinutes = Math.max(1, Math.round(wordCount / 220));
+
+const tableOfContents = headings
+  .filter((heading) => heading.depth === 2 || heading.depth === 3)
+  .map((heading) => ({
+    id: heading.slug,
+    label: heading.text,
+    depth: heading.depth as 2 | 3,
+  }));
+
+const sourceHost = post.data.sourceUrl
+  ? new URL(post.data.sourceUrl).host.replace(/^www\./, '')
+  : null;
 ---
 
 <Layout title={`${post.data.title} | Sifr blog`}>
-  <section class="blog-post-wrapper">
-    <a href="/blog" class="back-link">← Back to blog</a>
-    <article>
-      <header class="blog-header">
-        <h1>{post.data.title}</h1>
-        <div class="blog-meta">
-          <time datetime={post.data.date.toISOString()}>
-            {
-              post.data.date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })
-            }
-          </time>
+  <section class="blog-post-shell">
+    <div class="blog-post-wrapper">
+      <a href="/blog" class="back-link">← Back to blog</a>
+      <article class="blog-article">
+        <header class="blog-header">
+          <p class="blog-eyebrow">Engineering Notes</p>
+          <h1>{post.data.title}</h1>
+          <div class="blog-meta">
+            <time datetime={post.data.date.toISOString()}>
+              {
+                post.data.date.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })
+              }
+            </time>
+            <span class="blog-meta-divider" aria-hidden="true">•</span>
+            <span>{readingMinutes} min read</span>
+            {sourceHost && (
+              <>
+                <span class="blog-meta-divider" aria-hidden="true">•</span>
+                <a
+                  class="blog-source-link"
+                  href={post.data.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  Source: {sourceHost}
+                </a>
+              </>
+            )}
+          </div>
+        </header>
+        <div class="blog-content">
+          <Content />
         </div>
-      </header>
-      <div class="blog-content">
-        <Content />
-      </div>
-    </article>
+      </article>
+    </div>
+    {tableOfContents.length > 0 && (
+      <aside class="blog-toc" aria-label="On this page">
+        <p class="blog-toc-title">On this page</p>
+        <ul>
+          {tableOfContents.map((item) => (
+            <li class:list={{ 'toc-subitem': item.depth === 3 }}>
+              <a href={`#${item.id}`}>{item.label}</a>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    )}
   </section>
 </Layout>
