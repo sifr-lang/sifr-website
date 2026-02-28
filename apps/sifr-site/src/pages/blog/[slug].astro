@@ -33,9 +33,26 @@ const tableOfContents = headings
     label: heading.text,
     depth: heading.depth as 1 | 2,
   }));
+
+const canonicalPath = `/blog/${post.slug}`;
+const articlePublished = post.data.date.toISOString();
+const articleModified = (post.data.updated ?? post.data.date).toISOString();
+const articleKeywords = ['sifr', 'blog', ...(post.data.keywords ?? [])];
 ---
 
-<Layout title={`${post.data.title} | Sifr blog`} stickyHeader={false}>
+<Layout
+  title={`${post.data.title} | Sifr blog`}
+  description={post.data.excerpt}
+  canonical={canonicalPath}
+  image={post.data.ogImage ?? '/logo.webp'}
+  imageAlt={post.data.ogImageAlt ?? post.data.title}
+  type="article"
+  author={post.data.author}
+  publishedTime={articlePublished}
+  modifiedTime={articleModified}
+  keywords={articleKeywords}
+  stickyHeader={false}
+>
   <section class="blog-post-shell">
     <div class="blog-post-wrapper">
       <article class="blog-article">

@@ -9,7 +9,14 @@ const posts = (await getCollection('blog')).sort(
 );
 ---
 
-<Layout title="Sifr blog">
+<Layout
+  title="Sifr Blog"
+  description="Release notes, language engineering notes, and practical development workflows for Sifr."
+  canonical="/blog"
+  image="/logo.webp"
+  imageAlt="Sifr blog"
+  keywords={['sifr', 'blog', 'release notes', 'language engineering']}
+>
   <section>
     <h1>Blog</h1>
     <ul class="blog-list">

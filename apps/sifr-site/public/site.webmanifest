@@ -1,0 +1,16 @@
+{
+  "name": "Sifr",
+  "short_name": "Sifr",
+  "description": "Sifr is a compact, fast language runtime with Python-like ergonomics and Rust-level speed.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#0f62fe",
+  "icons": [
+    {
+      "src": "/logo.webp",
+      "sizes": "any",
+      "type": "image/webp"
+    }
+  ]
+}
