@@ -3,31 +3,32 @@ import Layout from '../components/Layout.astro';
 ---
 
 <Layout title="Sifr — Home">
-  <section>
-    <img
-      class="hero-logo"
-      src="/logo.webp"
-      alt="Sifr logo"
-      width="88"
-      height="88"
-    />
-    <h1>Sifr</h1>
-    <p>Python syntax. Rust performance.</p>
-    <p>
-      Sifr is a compact, fast language runtime for people who want Python-like
-      ergonomics with Rust-level execution speed. This is the start of the
-      Sifr marketing and blog presence.
-    </p>
-    <div class="actions">
-      <a
-        class="button-link"
-        href="https://github.com/yaseralnajjar/sifr"
-        target="_blank"
-        rel="noreferrer noopener"
-      >
-        Get started
-      </a>
-      <a class="button-link-secondary" href="/blog">Read the blog</a>
+  <section class="hero-section">
+    <div class="hero-content">
+      <img
+        class="hero-logo"
+        src="/logo.webp"
+        alt="Sifr logo"
+        width="96"
+        height="96"
+      />
+      <h1 class="hero-title">Sifr</h1>
+      <p class="hero-tagline">Python syntax. Rust performance.</p>
+      <p class="hero-description">
+        Sifr is a compact, fast language runtime for people who want Python-like
+        ergonomics with Rust-level execution speed.
+      </p>
+      <div class="actions">
+        <a
+          class="button-link primary"
+          href="https://github.com/yaseralnajjar/sifr"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          Get started
+        </a>
+        <a class="button-link secondary" href="/blog">Read the blog</a>
+      </div>
     </div>
   </section>
 </Layout>
