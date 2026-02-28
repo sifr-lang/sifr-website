@@ -436,6 +436,59 @@ const articleKeywords = ['sifr', 'blog', ...(post.data.keywords ?? [])];
       return embed;
     };
 
+    const getYouTubeInfo = (href) => {
+      try {
+        const url = new URL(href, window.location.origin);
+        const hostname = url.hostname.replace(/^www\./, '');
+        let videoId = '';
+
+        if (hostname === 'youtu.be') {
+          videoId = url.pathname.split('/').filter(Boolean)[0] ?? '';
+        } else if (
+          hostname === 'youtube.com' ||
+          hostname === 'm.youtube.com' ||
+          hostname === 'youtube-nocookie.com'
+        ) {
+          if (url.pathname === '/watch') {
+            videoId = url.searchParams.get('v') ?? '';
+          } else if (url.pathname.startsWith('/shorts/')) {
+            videoId = url.pathname.split('/')[2] ?? '';
+          } else if (url.pathname.startsWith('/embed/')) {
+            videoId = url.pathname.split('/')[2] ?? '';
+          }
+        }
+
+        if (!/^[A-Za-z0-9_-]{11}$/.test(videoId)) {
+          return null;
+        }
+
+        return {
+          videoId,
+          canonicalUrl: `https://www.youtube.com/watch?v=${videoId}`,
+        };
+      } catch {
+        return null;
+      }
+    };
+
+    const createYouTubeEmbedElement = (videoInfo) => {
+      const embed = document.createElement('figure');
+      embed.className = 'video-embed';
+
+      const iframe = document.createElement('iframe');
+      iframe.className = 'video-embed-frame';
+      iframe.src = `https://www.youtube-nocookie.com/embed/${videoInfo.videoId}?rel=0`;
+      iframe.title = 'Embedded YouTube video';
+      iframe.loading = 'lazy';
+      iframe.allow =
+        'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+      iframe.allowFullscreen = true;
+
+      embed.appendChild(iframe);
+      return embed;
+    };
+
     const ensureTwitterWidgets = () => {
       if (window.twttr?.widgets?.createTweet) {
         return Promise.resolve(window.twttr);
@@ -497,6 +550,27 @@ const articleKeywords = ['sifr', 'blog', ...(post.data.keywords ?? [])];
 
       return urlMatch ? urlMatch[0] : null;
     };
+
+    const extractYouTubeUrlFromMarker = (rawText) => {
+      const markerMatch = rawText.match(/^\[!youtube\s+(.+)\]$/i);
+      if (!markerMatch) return null;
+
+      const urlMatch = markerMatch[1].match(
+        /https?:\/\/(?:www\.|m\.)?(?:youtube\.com|youtu\.be|youtube-nocookie\.com)\/[^\s\]]+/i,
+      );
+
+      return urlMatch ? urlMatch[0] : null;
+    };
+
+    content.querySelectorAll('p').forEach((paragraph) => {
+      const markerUrl = extractYouTubeUrlFromMarker((paragraph.textContent || '').trim());
+      if (!markerUrl) return;
+
+      const videoInfo = getYouTubeInfo(markerUrl);
+      if (!videoInfo) return;
+
+      paragraph.replaceWith(createYouTubeEmbedElement(videoInfo));
+    });
 
     content.querySelectorAll('p').forEach((paragraph) => {
       const markerUrl = extractTweetUrlFromMarker((paragraph.textContent || '').trim());

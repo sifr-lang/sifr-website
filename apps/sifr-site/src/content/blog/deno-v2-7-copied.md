@@ -6,6 +6,8 @@ eyebrow: "Release Notes"
 author: "Deno Team"
 ---
 
+[!youtube https://www.youtube.com/watch?v=AfOWy3uwnCA]
+
 We are happy to announce the release of version 2.7 of the Deno runtime, which brings a number of improvements and additions.
 
 To upgrade to Deno 2.7, run the following in your terminal:

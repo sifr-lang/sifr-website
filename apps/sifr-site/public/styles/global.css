@@ -640,6 +640,21 @@ footer a:hover {
   text-underline-offset: 3px;
 }
 
+.video-embed {
+  margin: 1rem 0 2.1rem;
+  border-radius: 0.9rem;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #000;
+}
+
+.video-embed-frame {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+}
+
 .blog-content code {
   font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
   font-size: 0.88em;
