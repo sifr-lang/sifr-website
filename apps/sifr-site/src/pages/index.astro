@@ -12,13 +12,17 @@ import Layout from '../components/Layout.astro';
 >
   <section class="hero-section">
     <div class="hero-content">
-      <img
-        class="hero-logo"
-        src="/logo.webp"
-        alt="Sifr logo"
-        width="96"
-        height="96"
-      />
+      <div class="hero-logo-shell" aria-hidden="true">
+        <img
+          class="hero-logo"
+          src="/apple-touch-icon.png"
+          alt=""
+          width="180"
+          height="180"
+          loading="eager"
+          decoding="async"
+        />
+      </div>
       <h1 class="hero-title">Sifr</h1>
       <p class="hero-tagline">Python syntax. Rust performance.</p>
       <p class="hero-description">

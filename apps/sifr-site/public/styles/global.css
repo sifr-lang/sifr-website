@@ -93,12 +93,12 @@ a:hover {
 
 .brand img {
   display: block;
-  width: 2.6rem;
-  height: 2.6rem;
+  width: 2.9rem;
+  height: 2.9rem;
   max-width: none;
-  object-fit: cover;
-  object-position: 37% 50%;
-  transform: translateY(0.5px);
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 6px 10px rgba(15, 23, 42, 0.14));
 }
 
 nav ul {
@@ -168,9 +168,37 @@ p {
   align-items: center;
 }
 
+.hero-logo-shell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(7.25rem, 13vw, 8.75rem);
+  aspect-ratio: 1;
+  margin-bottom: 1.65rem;
+  border-radius: 2rem;
+  background:
+    radial-gradient(120% 120% at 18% 12%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.2) 58%, rgba(225, 233, 244, 0.35) 100%),
+    linear-gradient(165deg, rgba(230, 238, 248, 0.75) 0%, rgba(238, 244, 252, 0.38) 100%);
+  border: 1px solid rgba(196, 207, 223, 0.65);
+  box-shadow:
+    0 18px 40px -30px rgba(15, 23, 42, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.hero-logo-shell::after {
+  content: '';
+  position: absolute;
+  inset: -22%;
+  z-index: -1;
+  background: radial-gradient(circle, rgba(69, 116, 210, 0.18) 0%, rgba(69, 116, 210, 0) 68%);
+  pointer-events: none;
+}
+
 .hero-logo {
-  margin-bottom: 2rem;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
+  width: 78%;
+  max-width: none;
+  margin: 0;
+  filter: drop-shadow(0 10px 16px rgba(15, 23, 42, 0.2));
 }
 
 .hero-tagline {
@@ -495,9 +523,13 @@ footer a:hover {
   }
 
   .brand img {
-    width: 2.25rem;
-    height: 2.25rem;
-    object-position: 37% 50%;
+    width: 2.4rem;
+    height: 2.4rem;
+  }
+
+  .hero-logo-shell {
+    width: 6.8rem;
+    border-radius: 1.75rem;
   }
   
   nav ul {
