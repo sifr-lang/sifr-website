@@ -298,3 +298,135 @@ footer a:hover {
     font-size: 2.5rem;
   }
 }
+
+/* Blog Post Specifics */
+.blog-post-wrapper {
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 2rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.back-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.blog-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.blog-header h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  margin-bottom: 1rem;
+  line-height: 1.15;
+}
+
+.blog-meta {
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.blog-content {
+  max-width: 65ch;
+  margin: 0 auto;
+  font-size: 1.125rem;
+  line-height: 1.75;
+}
+
+/* Markdown Styles within .blog-content */
+.blog-content h2 {
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  font-size: 1.75rem;
+  color: var(--text);
+  border-bottom: none;
+}
+
+.blog-content h3 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.4rem;
+}
+
+.blog-content p {
+  margin-bottom: 1.5rem;
+  color: #374151; /* Slightly darker than muted for reading */
+}
+
+.blog-content ul, 
+.blog-content ol {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.blog-content li {
+  margin-bottom: 0.5rem;
+}
+
+.blog-content blockquote {
+  border-left: 4px solid var(--accent);
+  margin: 1.5rem 0;
+  padding: 0.5rem 0 0.5rem 1.5rem;
+  font-style: italic;
+  background: #f9fafb;
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: #4b5563;
+}
+
+.blog-content a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.blog-content a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.blog-content hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 3rem 0;
+}
+
+.blog-content pre {
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  background: #1e293b !important; /* Force dark background for code blocks */
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.blog-content code {
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.blog-content :not(pre) > code {
+  background-color: #f3f4f6;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  color: #c2410c;
+  font-weight: 600;
+}
+
+/* Ensure images in blog posts are responsive and rounded */
+.blog-content img {
+  border-radius: 0.75rem;
+  margin: 2rem auto;
+  display: block;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
