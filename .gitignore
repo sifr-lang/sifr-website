@@ -23,3 +23,6 @@ __pycache__/
 dist/
 /apps/*/dist/
 /apps/*/node_modules/
+
+# Wrangler (Cloudflare) build/cache dirs – ignore in all subfolders
+**/.wrangler/
