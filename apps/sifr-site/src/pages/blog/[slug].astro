@@ -266,6 +266,80 @@ const articleKeywords = ['sifr', 'blog', ...(post.data.keywords ?? [])];
       pointer = cursor;
     }
 
+    const copyText = async (text) => {
+      if (navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          // Fall through to legacy copy path.
+        }
+      }
+
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', 'true');
+        textarea.style.position = 'absolute';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        const copied = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        return copied;
+      } catch {
+        return false;
+      }
+    };
+
+    const enhanceCodeBlockWithCopy = (pre) => {
+      if (!(pre instanceof HTMLElement) || pre.dataset.copyButtonReady === 'true') {
+        return;
+      }
+
+      pre.dataset.copyButtonReady = 'true';
+      pre.classList.add('has-copy-button');
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'code-copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code to clipboard');
+
+      const resetState = () => {
+        button.classList.remove('is-copied', 'is-failed');
+        button.textContent = 'Copy';
+      };
+
+      let resetTimerId = null;
+
+      button.addEventListener('click', async () => {
+        const codeNode = pre.querySelector('code');
+        const codeText = (codeNode?.textContent ?? pre.textContent ?? '').replace(/\n$/, '');
+        const copied = await copyText(codeText);
+
+        if (resetTimerId !== null) {
+          window.clearTimeout(resetTimerId);
+        }
+
+        if (copied) {
+          button.classList.remove('is-failed');
+          button.classList.add('is-copied');
+          button.textContent = 'Copied';
+        } else {
+          button.classList.remove('is-copied');
+          button.classList.add('is-failed');
+          button.textContent = 'Failed';
+        }
+
+        resetTimerId = window.setTimeout(resetState, 1400);
+      });
+
+      pre.appendChild(button);
+    };
+
+    content.querySelectorAll('pre').forEach(enhanceCodeBlockWithCopy);
+
     const setupTocSpy = () => {
       const toc = document.querySelector('.blog-toc');
       if (!toc) return;
@@ -326,7 +400,7 @@ const articleKeywords = ['sifr', 'blog', ...(post.data.keywords ?? [])];
 
     setupTocSpy();
 
-    const normalizeTweetUrl = (href) => {
+    const getTweetInfo = (href) => {
       try {
         const url = new URL(href, window.location.origin);
         const hostname = url.hostname.replace(/^www\./, '');
@@ -338,30 +412,81 @@ const articleKeywords = ['sifr', 'blog', ...(post.data.keywords ?? [])];
         const match = url.pathname.match(/^\/([^/]+)\/status\/(\d+)/);
         if (!match) return null;
 
-        return `https://twitter.com/${match[1]}/status/${match[2]}`;
+        return {
+          tweetId: match[2],
+          canonicalUrl: `https://twitter.com/${match[1]}/status/${match[2]}`,
+        };
       } catch {
         return null;
       }
     };
 
-    const createTweetEmbedElement = (tweetUrl) => {
+    const createTweetEmbedElement = (tweetInfo) => {
       const embed = document.createElement('figure');
       embed.className = 'tweet-embed';
+      embed.dataset.tweetId = tweetInfo.tweetId;
 
-      const iframe = document.createElement('iframe');
-      iframe.className = 'tweet-embed-frame';
-      iframe.title = 'Embedded X post';
-      iframe.loading = 'lazy';
-      iframe.src = `https://twitframe.com/show?url=${encodeURIComponent(tweetUrl)}`;
-      iframe.setAttribute('scrolling', 'no');
-      iframe.setAttribute('frameborder', '0');
-      iframe.setAttribute('allowtransparency', 'true');
+      const fallbackLink = document.createElement('a');
+      fallbackLink.href = tweetInfo.canonicalUrl;
+      fallbackLink.target = '_blank';
+      fallbackLink.rel = 'noreferrer noopener';
+      fallbackLink.textContent = 'View post on X';
+      embed.appendChild(fallbackLink);
 
-      embed.appendChild(iframe);
       return embed;
     };
 
+    const ensureTwitterWidgets = () => {
+      if (window.twttr?.widgets?.createTweet) {
+        return Promise.resolve(window.twttr);
+      }
+
+      const existingScript = document.querySelector('script[data-twitter-widgets]');
+      if (existingScript) {
+        return new Promise((resolve) => {
+          existingScript.addEventListener('load', () => resolve(window.twttr), { once: true });
+          existingScript.addEventListener('error', () => resolve(null), { once: true });
+        });
+      }
+
+      return new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.src = 'https://platform.twitter.com/widgets.js';
+        script.async = true;
+        script.setAttribute('data-twitter-widgets', 'true');
+        script.addEventListener('load', () => resolve(window.twttr), { once: true });
+        script.addEventListener('error', () => resolve(null), { once: true });
+        document.body.appendChild(script);
+      });
+    };
+
+    const hydrateTweetEmbeds = (twttr, embeds) => {
+      if (!twttr?.widgets?.createTweet) return;
+
+      embeds.forEach((embed) => {
+        const tweetId = embed.dataset.tweetId;
+        if (!tweetId) return;
+
+        const fallbackLink = embed.querySelector('a');
+        embed.textContent = '';
+
+        twttr.widgets
+          .createTweet(tweetId, embed, {
+            dnt: true,
+            align: 'center',
+            lang: 'en',
+          })
+          .catch(() => {
+            if (fallbackLink) {
+              embed.textContent = '';
+              embed.appendChild(fallbackLink);
+            }
+          });
+      });
+    };
+
     let embeddedTweetCount = 0;
+    const embeddedTweetNodes = [];
     const extractTweetUrlFromMarker = (rawText) => {
       const markerMatch = rawText.match(/^\[!tweet\s+(.+)\]$/i);
       if (!markerMatch) return null;
@@ -377,18 +502,20 @@ const articleKeywords = ['sifr', 'blog', ...(post.data.keywords ?? [])];
       const markerUrl = extractTweetUrlFromMarker((paragraph.textContent || '').trim());
       if (!markerUrl) return;
 
-      const tweetUrl = normalizeTweetUrl(markerUrl);
-      if (!tweetUrl) return;
+      const tweetInfo = getTweetInfo(markerUrl);
+      if (!tweetInfo) return;
 
-      paragraph.replaceWith(createTweetEmbedElement(tweetUrl));
+      const embedNode = createTweetEmbedElement(tweetInfo);
+      paragraph.replaceWith(embedNode);
+      embeddedTweetNodes.push(embedNode);
       embeddedTweetCount += 1;
     });
 
     const tweetLinks = content.querySelectorAll('a[href*="/status/"]');
 
     tweetLinks.forEach((link) => {
-      const tweetUrl = normalizeTweetUrl(link.href);
-      if (!tweetUrl) return;
+      const tweetInfo = getTweetInfo(link.href);
+      if (!tweetInfo) return;
 
       const paragraph = link.closest('p');
       if (!paragraph) return;
@@ -397,10 +524,18 @@ const articleKeywords = ['sifr', 'blog', ...(post.data.keywords ?? [])];
         return;
       }
 
-      paragraph.insertAdjacentElement('afterend', createTweetEmbedElement(tweetUrl));
+      const embedNode = createTweetEmbedElement(tweetInfo);
+      paragraph.insertAdjacentElement('afterend', embedNode);
+      embeddedTweetNodes.push(embedNode);
       embeddedTweetCount += 1;
     });
 
-    if (embeddedTweetCount === 0) return;
+    if (embeddedTweetCount === 0) {
+      return;
+    }
+
+    ensureTwitterWidgets().then((twttr) => {
+      hydrateTweetEmbeds(twttr, embeddedTweetNodes);
+    });
   })();
 </script>
