@@ -79,11 +79,6 @@ import Layout from '../components/Layout.astro';
             </svg>
           </button>
         </div>
-        <div class="install-guide">
-          <p>Installs the current beta preview to <code>~/.sifr/bin</code>.</p>
-          <p>The installer configures your shell profile. Set <code>SIFR_INSTALL_DIR</code> to choose another location.</p>
-        </div>
-        <p class="install-copy-status" aria-live="polite" data-copy-status>Copy command</p>
       </div>
     </div>
   </section>
@@ -97,7 +92,6 @@ import Layout from '../components/Layout.astro';
     const commandText = installWidget.querySelector('[data-command-text]');
     const commandPrompt = installWidget.querySelector('[data-command-prompt]');
     const copyButton = installWidget.querySelector('[data-copy-btn]');
-    const copyStatus = installWidget.querySelector('[data-copy-status]');
     const commandPanel = installWidget.querySelector('#install-command-panel');
 
     const installCommands = {
@@ -170,18 +164,13 @@ import Layout from '../components/Layout.astro';
       });
     });
 
-    if (copyButton && commandText && copyStatus) {
+    if (copyButton && commandText) {
       copyButton.addEventListener('click', async () => {
         try {
           await navigator.clipboard.writeText(commandText.textContent ?? '');
-          copyStatus.textContent = 'Copied to clipboard';
         } catch {
-          copyStatus.textContent = 'Clipboard unavailable';
+          return;
         }
-
-        window.setTimeout(() => {
-          copyStatus.textContent = 'Copy command';
-        }, 1800);
       });
     }
   }
