@@ -30,7 +30,7 @@ import Layout from '../components/Layout.astro';
       </p>
       <div class="install-widget" data-install-widget>
         <div class="install-widget-head">
-          <div class="install-tabs" role="tablist" aria-label="Operating system install commands">
+          <div class="install-tabs" role="tablist" aria-label="Preview install commands">
             <button
               type="button"
               class="install-tab is-active"
@@ -38,34 +38,50 @@ import Layout from '../components/Layout.astro';
               id="install-tab-unix"
               aria-selected="true"
               aria-controls="install-command-panel"
-              data-platform="unix"
+              data-platform="default"
             >
-              Linux &amp; macOS
+              Default
             </button>
             <button
               type="button"
               class="install-tab"
               role="tab"
-              id="install-tab-windows"
+              id="install-tab-alpha"
               aria-selected="false"
               aria-controls="install-command-panel"
               tabindex="-1"
-              data-platform="windows"
+              data-platform="alpha"
             >
-              Windows
+              Alpha
+            </button>
+            <button
+              type="button"
+              class="install-tab"
+              role="tab"
+              id="install-tab-pin"
+              aria-selected="false"
+              aria-controls="install-command-panel"
+              tabindex="-1"
+              data-platform="pin"
+            >
+              Version pin
             </button>
           </div>
         </div>
 
         <div class="install-command-shell" id="install-command-panel" role="tabpanel" aria-labelledby="install-tab-unix">
           <span class="install-command-prompt" data-command-prompt>$</span>
-          <code class="install-command-text" data-command-text>git clone https://github.com/yaseralnajjar/sifr.git &amp;&amp; cd sifr &amp;&amp; cargo build --release</code>
+          <code class="install-command-text" data-command-text>curl -fsSL https://sifr.sh/install | sh</code>
           <button type="button" class="install-copy-btn" data-copy-btn aria-label="Copy install command">
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <rect x="9" y="9" width="11" height="11" rx="2"></rect>
               <rect x="4" y="4" width="11" height="11" rx="2"></rect>
             </svg>
           </button>
+        </div>
+        <div class="install-guide">
+          <p>Installs the current beta preview to <code>~/.sifr/bin</code>.</p>
+          <p>Add <code>~/.sifr/bin</code> to <code>PATH</code>, or set <code>SIFR_INSTALL_DIR</code> before running the installer.</p>
         </div>
         <p class="install-copy-status" aria-live="polite" data-copy-status>Copy command</p>
       </div>
@@ -85,13 +101,17 @@ import Layout from '../components/Layout.astro';
     const commandPanel = installWidget.querySelector('#install-command-panel');
 
     const installCommands = {
-      unix: {
-        command: 'git clone https://github.com/yaseralnajjar/sifr.git && cd sifr && cargo build --release',
+      default: {
+        command: 'curl -fsSL https://sifr.sh/install | sh',
         prompt: '$',
       },
-      windows: {
-        command: 'git clone https://github.com/yaseralnajjar/sifr.git; cd sifr; cargo build --release',
-        prompt: 'PS>',
+      alpha: {
+        command: 'curl -fsSL https://sifr.sh/install/alpha | sh',
+        prompt: '$',
+      },
+      pin: {
+        command: 'curl -fsSL https://sifr.sh/install | sh -s -- --version 0.1.0-beta.1',
+        prompt: '$',
       },
     };
 
