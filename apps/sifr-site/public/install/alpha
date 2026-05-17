@@ -5,7 +5,7 @@ set -eu
 
 DEFAULT_CHANNEL="alpha"
 ALPHA_VERSION="0.1.0-alpha.1"
-BETA_VERSION="0.1.0-beta.1"
+BETA_VERSION="0.1.0-beta.2"
 DEFAULT_INSTALL_BASE_URL="https://sifr.sh/install"
 
 fail() {
