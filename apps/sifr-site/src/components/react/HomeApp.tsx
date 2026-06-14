@@ -207,7 +207,7 @@ export default function HomeApp() {
                 decoding="async"
                 aria-hidden="true"
               />
-              <span className="font-display font-bold text-lg tracking-wider text-zinc-950">sifr</span>
+              <span className="font-display font-bold text-3xl leading-none tracking-wide text-zinc-950">Sifr</span>
             </a>
 
             <nav className="hidden md:flex items-center gap-6 text-base font-medium text-zinc-700" aria-label="Primary">
