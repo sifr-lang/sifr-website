@@ -13,10 +13,20 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5.18.0"
+    "@astrojs/react": "^5.0.7",
+    "@tailwindcss/vite": "^4.3.1",
+    "astro": "^5.18.0",
+    "lucide-react": "^1.18.0",
+    "motion": "^12.40.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tailwindcss": "^4.3.1"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.6",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.9.3",
     "wrangler": "^4.69.0"
   }
 }

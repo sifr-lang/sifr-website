@@ -1,5 +1,7 @@
 ---
 import Header from './Header.astro';
+import Footer from './Footer.astro';
+import '../styles/global.css';
 
 type JsonLdEntry = Record<string, unknown>;
 
@@ -21,11 +23,12 @@ type Props = {
   twitterCreator?: string;
   jsonLd?: JsonLdEntry | JsonLdEntry[];
   stickyHeader?: boolean;
+  bare?: boolean;
 };
 
 const defaultTitle = 'Sifr';
 const defaultDescription =
-  'Sifr is a compact, safe language for people who want Python-like ergonomics with Rust-level execution speed.';
+  'Sifr compiles Python into safe, native Rust binaries. No runtime interpreters, no virtual machines, and minimal runtime crashes.';
 const defaultImage = '/logo.webp';
 
 const {
@@ -46,6 +49,7 @@ const {
   twitterCreator,
   jsonLd,
   stickyHeader = true,
+  bare = false,
 } = Astro.props as Props;
 
 const site = Astro.site ?? new URL(Astro.url.origin);
@@ -106,7 +110,7 @@ const jsonLdEntries = [
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="robots" content={robots} />
-    <meta name="theme-color" content="#0f62fe" />
+    <meta name="theme-color" content="#09090b" />
     {keywordContent && <meta name="keywords" content={keywordContent} />}
 
     <link rel="canonical" href={canonicalUrl} />
@@ -154,24 +158,21 @@ const jsonLdEntries = [
         set:html={JSON.stringify(entry).replace(/</g, '\\u003c')}
       />
     ))}
-
-    <link rel="stylesheet" href="/styles/global.css" />
   </head>
-  <body>
-    <Header sticky={stickyHeader} />
-    <main>
-      <slot />
-    </main>
-    <footer>
-      <p>
-        Sifr - Python syntax, Rust performance.
-        <a
-          href="https://github.com/yaseralnajjar/sifr"
-          target="_blank"
-          rel="noreferrer noopener"
-          >Visit GitHub</a
-        >
-      </p>
-    </footer>
+  <body class:list={[{ 'min-h-screen bg-zinc-50 font-sans text-zinc-900': !bare }]}>
+    {
+      bare ? (
+        <slot />
+      ) : (
+        <>
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-1 bg-gradient-to-r from-transparent via-sky-500/50 to-transparent blur-sm pointer-events-none" />
+          <Header sticky={stickyHeader} />
+          <main class="max-w-7xl mx-auto px-6 py-12 md:py-16 relative z-10">
+            <slot />
+          </main>
+          <Footer />
+        </>
+      )
+    }
   </body>
 </html>
