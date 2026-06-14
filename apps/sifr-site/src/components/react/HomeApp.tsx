@@ -890,7 +890,7 @@ def main():
               <span className="font-display font-semibold tracking-wider">sifr.sh</span>
             </div>
             <p className="text-xs text-zinc-400 leading-normal max-w-sm">
-              Python ergonomics compiled into safe native binaries. No virtual VMs, no GC layers, and zero runtime crashes.
+              Python ergonomics compiled into safe native binaries. No virtual VMs, no GC layers, and minimal runtime crashes.
             </p>
           </div>
 
