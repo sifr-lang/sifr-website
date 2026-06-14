@@ -273,9 +273,9 @@ export default function HomeApp() {
               </h1>
               
               <p className="text-zinc-600 text-base sm:text-lg md:text-xl leading-relaxed max-w-xl">
-                Sifr compiles Python into safe, native Rust binaries.
+                Sifr compiles Python into safe, <strong className="text-zinc-900 font-semibold">native Rust binaries</strong>.
                 <br />
-                No runtime interpreters, no virtual machines, and <strong className="text-zinc-900 font-semibold">minimal</strong> runtime crashes.
+                No runtime interpreters, no virtual machines, and minimal runtime crashes.
               </p>
             </div>
 
