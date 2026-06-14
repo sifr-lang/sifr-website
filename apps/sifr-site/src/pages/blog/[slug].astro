@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import Layout from '../../components/Layout.astro';
 import { estimateReadingMinutes } from '../../utils/readingTime';
@@ -7,7 +7,7 @@ import { estimateReadingMinutes } from '../../utils/readingTime';
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
   return posts.map((post: CollectionEntry<'blog'>) => ({
-    params: { slug: post.slug },
+    params: { slug: post.id },
     props: { post },
   }));
 }
@@ -17,7 +17,7 @@ type Props = {
 };
 
 const { post } = Astro.props as Props;
-const { Content, headings } = await post.render();
+const { Content, headings } = await render(post);
 
 const readingMinutes = estimateReadingMinutes(post.body);
 
@@ -29,7 +29,7 @@ const tableOfContents = headings
     depth: heading.depth as 1 | 2,
   }));
 
-const canonicalPath = `/blog/${post.slug}`;
+const canonicalPath = `/blog/${post.id}`;
 const articlePublished = post.data.date.toISOString();
 const articleModified = (post.data.updated ?? post.data.date).toISOString();
 const articleKeywords = ['sifr', 'blog', ...(post.data.keywords ?? [])];

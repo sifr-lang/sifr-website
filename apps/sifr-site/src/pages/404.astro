@@ -61,7 +61,7 @@ const latestPosts = (await getCollection('blog'))
             {latestPosts.map((post) => (
               <li>
                 <a
-                  href={`/blog/${post.slug}`}
+                  href={`/blog/${post.id}`}
                   class="text-sm font-semibold text-zinc-700 hover:text-sky-700 transition-colors no-underline hover:underline"
                 >
                   {post.data.title}

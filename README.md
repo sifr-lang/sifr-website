@@ -51,3 +51,7 @@ From `apps/sifr-site` directly:
 - `npm run deploy`
 
 Deploy uses Wrangler static assets mode (`apps/sifr-site/wrangler.jsonc`).
+
+## Prerequisites
+
+- Node.js 24+ (see `.nvmrc`; run `nvm use` if you use nvm)

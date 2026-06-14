@@ -21,7 +21,7 @@ export async function GET({ site }: APIContext) {
   ];
 
   const blogPages = posts.map((post) => ({
-    path: `/blog/${post.slug}`,
+    path: `/blog/${post.id}`,
     lastmod: post.data.updated ?? post.data.date,
   }));
 
