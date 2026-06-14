@@ -1,17 +1,20 @@
 ---
 const links = [
-  { href: '/', label: 'Home' },
-  { href: '/blog', label: 'Blog' },
-  { href: '/#pipeline', label: 'Docs' },
+  { href: '/', label: 'Home', match: (path: string) => path === '/' },
+  { href: '/blog', label: 'Blog', match: (path: string) => path.startsWith('/blog') },
+  { href: '/#pipeline', label: 'Docs', match: () => false },
 ];
 
 const githubUrl = 'https://github.com/yaseralnajjar/sifr';
+const pathname = Astro.url.pathname;
 
 type Props = {
   sticky?: boolean;
 };
 
 const { sticky = true } = Astro.props as Props;
+
+const isActive = (match: (path: string) => boolean) => match(pathname);
 ---
 
 <header
@@ -21,27 +24,37 @@ const { sticky = true } = Astro.props as Props;
   ]}
   id="header-nav"
 >
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between gap-4">
     <div class="flex items-center gap-4 sm:gap-8 min-w-0">
-      <a class="flex items-center gap-2 group shrink-0" href="/" aria-label="Sifr home">
+      <a class="flex items-center gap-2.5 group shrink-0" href="/" aria-label="Sifr home">
         <img
           src="/logo.webp"
           alt=""
-          width="36"
-          height="36"
-          class="h-9 w-9 object-contain group-hover:scale-105 transition-transform"
+          width="48"
+          height="48"
+          class="h-12 w-12 object-contain group-hover:scale-105 transition-transform"
           decoding="async"
           aria-hidden="true"
         />
         <span class="font-display font-bold text-lg tracking-wider text-zinc-950">sifr</span>
       </a>
 
-      <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-700" aria-label="Primary">
-        {links.map((link) => (
-          <a href={link.href} class="hover:text-zinc-950 transition-colors rounded-sm">
-            {link.label}
-          </a>
-        ))}
+      <nav class="hidden md:flex items-center gap-6 text-base font-medium text-zinc-700" aria-label="Primary">
+        {links.map((link) => {
+          const active = isActive(link.match);
+          return (
+            <a
+              href={link.href}
+              class:list={[
+                'hover:text-zinc-950 transition-colors rounded-sm',
+                active ? 'font-bold text-zinc-950' : 'font-medium',
+              ]}
+              aria-current={active ? 'page' : undefined}
+            >
+              {link.label}
+            </a>
+          );
+        })}
       </nav>
     </div>
 
@@ -59,14 +72,21 @@ const { sticky = true } = Astro.props as Props;
           class="absolute right-0 top-full mt-2 min-w-40 rounded-xl border border-zinc-200 bg-white p-2 shadow-lg"
           aria-label="Primary mobile"
         >
-          {links.map((link) => (
-            <a
-              href={link.href}
-              class="block rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950"
-            >
-              {link.label}
-            </a>
-          ))}
+          {links.map((link) => {
+            const active = isActive(link.match);
+            return (
+              <a
+                href={link.href}
+                class:list={[
+                  'block rounded-lg px-3 py-2 text-base hover:bg-zinc-100 hover:text-zinc-950',
+                  active ? 'font-bold text-zinc-950' : 'font-medium text-zinc-700',
+                ]}
+                aria-current={active ? 'page' : undefined}
+              >
+                {link.label}
+              </a>
+            );
+          })}
         </nav>
       </details>
 

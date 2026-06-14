@@ -195,25 +195,25 @@ export default function HomeApp() {
 
       {/* TOP HEADER */}
       <header className="sticky top-0 z-40 bg-zinc-50/80 backdrop-blur-md border-b border-zinc-200/60" id="header-nav">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4 min-w-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between gap-4 min-w-0">
           <div className="flex items-center gap-4 sm:gap-8 min-w-0">
-            <a href="/" className="flex items-center gap-2 group shrink-0" aria-label="Sifr home">
+            <a href="/" className="flex items-center gap-2.5 group shrink-0" aria-label="Sifr home">
               <img
                 src="/logo.webp"
                 alt=""
-                width={36}
-                height={36}
-                className="h-9 w-9 object-contain group-hover:scale-105 transition-transform"
+                width={48}
+                height={48}
+                className="h-12 w-12 object-contain group-hover:scale-105 transition-transform"
                 decoding="async"
                 aria-hidden="true"
               />
               <span className="font-display font-bold text-lg tracking-wider text-zinc-950">sifr</span>
             </a>
 
-            <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-700" aria-label="Primary">
-              <a href="/" className="hover:text-zinc-950 transition-colors" id="nav-home">Home</a>
-              <a href="/blog" className="hover:text-zinc-950 transition-colors" id="nav-blog">Blog</a>
-              <a href="#pipeline" className="hover:text-zinc-950 transition-colors" id="nav-docs">Docs</a>
+            <nav className="hidden md:flex items-center gap-6 text-base font-medium text-zinc-700" aria-label="Primary">
+              <a href="/" className="font-bold text-zinc-950 hover:text-zinc-950 transition-colors" id="nav-home" aria-current="page">Home</a>
+              <a href="/blog" className="font-medium hover:text-zinc-950 transition-colors" id="nav-blog">Blog</a>
+              <a href="#pipeline" className="font-medium hover:text-zinc-950 transition-colors" id="nav-docs">Docs</a>
             </nav>
           </div>
 
@@ -228,9 +228,9 @@ export default function HomeApp() {
                 </svg>
               </summary>
               <nav className="absolute right-0 top-full mt-2 min-w-40 rounded-xl border border-zinc-200 bg-white p-2 shadow-lg" aria-label="Primary mobile">
-                <a href="/" className="block rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950">Home</a>
-                <a href="/blog" className="block rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950">Blog</a>
-                <a href="#pipeline" className="block rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950">Docs</a>
+                <a href="/" className="block rounded-lg px-3 py-2 text-base font-bold text-zinc-950 hover:bg-zinc-100" aria-current="page">Home</a>
+                <a href="/blog" className="block rounded-lg px-3 py-2 text-base font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950">Blog</a>
+                <a href="#pipeline" className="block rounded-lg px-3 py-2 text-base font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950">Docs</a>
               </nav>
             </details>
 
