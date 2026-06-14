@@ -196,7 +196,7 @@ def main():
                         <div className="text-red-400">   |            ^ `x` may be None</div>
                         <div className="text-zinc-400">   |</div>
                         <div className="text-sky-300">   = help: check whether `x` is None before using it as an integer</div>
-                        <div className="text-sky-400 underline select-all">   = docs: https://sifr.sh/docs/errors/SIFR-TYPE-0005</div>
+                        <div className="text-sky-400 underline select-all">   = docs: https://docs.sifr.sh/errors/SIFR-TYPE-0005</div>
                       </div>
                     )}
 
@@ -229,7 +229,7 @@ def main():
       }
     ],
     "help": "check whether \`x\` is None before using it as an integer",
-    "url": "https://sifr.sh/docs/errors/SIFR-TYPE-0005"
+    "url": "https://docs.sifr.sh/errors/SIFR-TYPE-0005"
   }
 ]`}
                       </div>

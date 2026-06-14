@@ -23,6 +23,7 @@ import { AgentCompilerSection } from './AgentCompilerSection';
 import { AnimatedPipeline, highlightLineText } from './AnimatedPipeline';
 
 const GITHUB_URL = 'https://github.com/yaseralnajjar/sifr';
+const DOCS_URL = 'https://docs.sifr.sh';
 const INSTALL_COMMAND = 'curl -fsSL https://sifr.sh/install | sh';
 
 // Raw Benchmark Data for all 20 categories
@@ -213,7 +214,7 @@ export default function HomeApp() {
             <nav className="hidden md:flex items-center gap-6 text-base font-medium text-zinc-700" aria-label="Primary">
               <a href="/" className="font-bold text-zinc-950 hover:text-zinc-950 transition-colors" id="nav-home" aria-current="page">Home</a>
               <a href="/blog" className="font-medium hover:text-zinc-950 transition-colors" id="nav-blog">Blog</a>
-              <a href="#pipeline" className="font-medium hover:text-zinc-950 transition-colors" id="nav-docs">Docs</a>
+              <a href={DOCS_URL} className="font-medium hover:text-zinc-950 transition-colors" id="nav-docs">Docs</a>
             </nav>
           </div>
 
@@ -230,7 +231,7 @@ export default function HomeApp() {
               <nav className="absolute right-0 top-full mt-2 min-w-40 rounded-xl border border-zinc-200 bg-white p-2 shadow-lg" aria-label="Primary mobile">
                 <a href="/" className="block rounded-lg px-3 py-2 text-base font-bold text-zinc-950 hover:bg-zinc-100" aria-current="page">Home</a>
                 <a href="/blog" className="block rounded-lg px-3 py-2 text-base font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950">Blog</a>
-                <a href="#pipeline" className="block rounded-lg px-3 py-2 text-base font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950">Docs</a>
+                <a href={DOCS_URL} className="block rounded-lg px-3 py-2 text-base font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950">Docs</a>
               </nav>
             </details>
 
@@ -248,7 +249,7 @@ export default function HomeApp() {
               </svg>
             </a>
             <a 
-              href="#pipeline" 
+              href={`${DOCS_URL}/installation`}
               className="hidden sm:inline-flex text-sm font-medium px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg transition-colors shadow-sm"
               id="cta-get-started"
             >
@@ -307,7 +308,7 @@ export default function HomeApp() {
               </div>
 
               <a 
-                href="#pipeline"
+                href={DOCS_URL}
                 className="inline-flex items-center justify-center gap-2 px-5 bg-sky-50 text-sky-700 hover:bg-sky-100 font-medium rounded-xl border border-sky-200/60 transition-colors whitespace-nowrap h-12 w-full @4xl:w-auto shrink-0"
                 id="hero-docs-button"
               >
@@ -902,7 +903,7 @@ def main():
               <span className="sr-only"> (opens in new tab)</span>
             </a>
             <a href="/blog" className="hover:text-white transition-colors">Blog</a>
-            <a href="#pipeline" className="hover:text-white transition-colors">Documentation</a>
+            <a href={DOCS_URL} className="hover:text-white transition-colors">Documentation</a>
             <span className="text-[10px] text-zinc-400 mt-4">&copy; {new Date().getFullYear()} Sifr project.</span>
           </nav>
 
