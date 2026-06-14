@@ -20,21 +20,9 @@
   5. Move to the next item.
 - Keep docs updated with status, checklist state, and merged PR links.
 
-## Planning and tracking files
+## References
 
-Update corresponding docs after each item is completed (as applicable):
-
-- Architecture: `.cursor/plans/main/architecture.md`
-- Roadmap: `.cursor/plans/main/roadmap.md`
-- Phases: `.cursor/plans/main/phases/`
-- Issues: `issues/`
-
-## Local validation commands
-
-- Full local test suite:
-  - `/Users/yaseralnajjar/work/sifr/codebase/scripts/run_all_tests.sh`
-- Milestone demos:
-  - `cargo run -q -p sifr -- run demos/<milestone_demo>.sifr`
+- Design/style guide: `DESIGN.md`
 
 ## Safety rules
 

@@ -6,7 +6,7 @@ This repository is a monorepo that hosts the first Sifr-facing site in `apps/sif
 
 - `apps/sifr-site/` — Astro app for homepage and blog.
 - `apps/sifr-site/public/logo.webp` — copied from the Sifr repository.
-- `apps/sifr-site/public/styles/global.css` — global stylesheet served as a static asset.
+- `apps/sifr-site/src/styles/global.css` — global stylesheet (Tailwind theme and shared utilities).
 - `apps/sifr-site/src/content/blog/*.md` — Markdown blog posts.
 
 ## Current blog posts
