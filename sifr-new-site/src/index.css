@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", "Plus Jakarta Sans", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-cryo-cyan: #0EA5E9;
+  --color-zero-blue: #0047FF;
+  --color-void-black: #09090B;
+  --color-frost-gray: #71717A;
+  --color-rust-orange: #EA580C;
+  --color-chalk-white: #FCFCFD;
+  
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-glow: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    filter: drop-shadow(0 0 2px rgba(0, 71, 255, 0.2)) drop-shadow(0 0 10px rgba(14, 165, 233, 0.1));
+  }
+  to {
+    filter: drop-shadow(0 0 6px rgba(0, 71, 255, 0.4)) drop-shadow(0 0 15px rgba(14, 165, 233, 0.25));
+  }
+}
+
+/* Custom scrollbar and ambient styles for Sifr landing page in Light Mode */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FCFCFD;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(9, 9, 11, 0.1);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 71, 255, 0.3);
+}
+
+body {
+  background-color: #F4F4F5; /* zinc-100 ambient background */
+  color: #09090B;
+  overflow-x: hidden;
+  font-family: var(--font-sans);
+}
+
+/* Custom shadow & glows fit for crisp light mode */
+.glow-border-cyan {
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.08), 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.glow-border-blue {
+  box-shadow: 0 0 20px rgba(0, 71, 255, 0.08), 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.terminal-shadow {
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(9, 9, 11, 0.05);
+}
+
+.card-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(9, 9, 11, 0.06);
+}
+

@@ -1,0 +1,6 @@
+{
+  "name": "Sifr",
+  "description": "Python ergonomics compiled to Rust speed: zero runtime overhead, compile-time safety, and single-file native binaries.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
