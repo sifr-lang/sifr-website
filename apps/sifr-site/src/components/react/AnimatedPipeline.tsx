@@ -31,7 +31,7 @@ const STEPS: StepData[] = [
     id: 1,
     label: "Source",
     badge: "Input File",
-    badgeColor: "bg-zinc-100/80 border-zinc-200/60 text-zinc-650",
+    badgeColor: "bg-zinc-100/80 border-zinc-200/60 text-zinc-600",
     title: "1. Pythonic Source",
     description: "Write clean, highly-readable Python syntax with explicit type annotations. Standard functions and loops are parsed with absolute simplicity.",
     fileName: "main.sifr",
@@ -157,7 +157,7 @@ const highlightToken = (token: string, key: string) => {
 
 export function highlightLineText(line: string) {
   if (line.trim().startsWith('#') || line.trim().startsWith('//')) {
-    return <span className="text-zinc-500 italic">{line}</span>;
+    return <span className="text-zinc-400 italic">{line}</span>;
   }
 
   // Split into tokens: words, spaces, strings, punctuation
@@ -287,18 +287,21 @@ export function AnimatedPipeline() {
                 {/* Step circle */}
                 <button
                   onClick={() => selectStepHandler(step.id)}
+                  type="button"
+                  aria-current={isActive ? 'step' : undefined}
+                  aria-label={`${step.label} step${isCompleted ? ', completed' : ''}${isActive ? ', current' : ''}`}
                   className={`flex items-center gap-2.5 px-3 md:px-4 py-2 rounded-xl border text-xs font-bold transition-all duration-350 cursor-pointer ${
                     isActive 
                       ? 'bg-zinc-900 border-zinc-950 text-white shadow-md scale-[1.03]'
                       : isCompleted
                       ? 'bg-sky-50 border-sky-100 text-sky-700'
-                      : 'bg-white border-zinc-200 text-zinc-500 hover:text-zinc-800 hover:border-zinc-300'
+                      : 'bg-white border-zinc-200 text-zinc-600 hover:text-zinc-800 hover:border-zinc-300'
                   }`}
                 >
                   <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono text-[10px] ${
                     isActive 
                       ? 'bg-sky-500 text-zinc-950 font-bold' 
-                      : isCompleted ? 'bg-sky-100 text-sky-800' : 'bg-zinc-100 text-zinc-500'
+                      : isCompleted ? 'bg-sky-100 text-sky-800' : 'bg-zinc-100 text-zinc-600'
                   }`}>
                     {step.id}
                   </span>
@@ -333,14 +336,18 @@ export function AnimatedPipeline() {
         <div className="flex items-center gap-2.5 self-center md:self-auto border-t md:border-t-0 border-zinc-200/60 pt-4 md:pt-0 w-full md:w-auto justify-center">
           <button
             onClick={handlePrev}
-            className="p-2 border border-zinc-200/80 hover:bg-zinc-100 rounded-lg text-zinc-650 transition-colors"
-            title="Previous Step"
+            type="button"
+            className="p-2 border border-zinc-200/80 hover:bg-zinc-100 rounded-lg text-zinc-600 transition-colors"
+            aria-label="Previous pipeline step"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4" aria-hidden="true" />
           </button>
 
           <button
             onClick={() => setIsPlaying(!isPlaying)}
+            type="button"
+            aria-pressed={isPlaying}
+            aria-label={isPlaying ? 'Pause pipeline demo' : 'Autoplay pipeline demo'}
             className={`px-4 py-2 rounded-lg border flex items-center gap-2 text-xs font-bold transition-all ${
               isPlaying 
                 ? 'bg-amber-500 hover:bg-amber-600 border-amber-600 text-zinc-950' 
@@ -362,10 +369,11 @@ export function AnimatedPipeline() {
 
           <button
             onClick={handleNext}
-            className="p-2 border border-zinc-200/80 hover:bg-zinc-100 rounded-lg text-zinc-650 transition-colors"
-            title="Next Step"
+            type="button"
+            className="p-2 border border-zinc-200/80 hover:bg-zinc-100 rounded-lg text-zinc-600 transition-colors"
+            aria-label="Next pipeline step"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4" aria-hidden="true" />
           </button>
 
           <button
@@ -373,10 +381,11 @@ export function AnimatedPipeline() {
               setIsPlaying(false);
               setCurrentStep(1);
             }}
+            type="button"
             className="p-2 border border-zinc-200/80 hover:bg-zinc-100 rounded-lg text-zinc-600 transition-colors"
-            title="Reset Compilation Flow"
+            aria-label="Reset compilation flow"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
 
@@ -395,7 +404,7 @@ export function AnimatedPipeline() {
               </span>
 
               {isPlaying && (
-                <span className="text-[10px] text-zinc-400 font-mono flex items-center gap-1">
+                <span className="text-[10px] text-zinc-600 font-mono flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
                   Playing Auto-Flow
                 </span>
@@ -406,23 +415,23 @@ export function AnimatedPipeline() {
               {activeStepData.title}
             </h3>
 
-            <p className="text-zinc-650 text-sm leading-relaxed">
+            <p className="text-zinc-600 text-sm leading-relaxed">
               {activeStepData.description}
             </p>
           </div>
 
           <div className="bg-zinc-50 border border-zinc-150/80 p-4 rounded-xl flex flex-col gap-2.5 mt-4">
-            <span className="text-[10px] font-bold font-mono tracking-wider text-zinc-400 uppercase">
+            <span className="text-[10px] font-bold font-mono tracking-wider text-zinc-600 uppercase">
               Under The Hood Guardrail
             </span>
-            <p className="text-xs text-zinc-650 leading-relaxed font-sans">
+            <p className="text-xs text-zinc-600 leading-relaxed font-sans">
               {activeStepData.explanation}
             </p>
           </div>
 
           {/* Active progress tracker status bar with flowing active indicator */}
           <div className="mt-6 flex flex-col gap-1.5">
-            <div className="flex justify-between items-center text-[10.5px] font-mono text-zinc-400">
+            <div className="flex justify-between items-center text-[10.5px] font-mono text-zinc-600">
               <span className="font-bold">COMPENSATION FLOW STATUS</span>
               <span className="text-zinc-600 font-bold">{currentStep} of 4</span>
             </div>
@@ -470,7 +479,7 @@ export function AnimatedPipeline() {
                   </div>
                 </div>
 
-                <div className="text-[10px] font-mono text-zinc-550 bg-zinc-900 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                <div className="text-[10px] font-mono text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
                   {activeStepData.fileType === 'sifr' ? 'Source' : activeStepData.fileType === 'rs' ? 'Emitted Rust' : 'Terminal stdout'}
                 </div>
               </div>
@@ -485,7 +494,7 @@ export function AnimatedPipeline() {
                     let className = "text-zinc-300";
                     if (!isCodeType) {
                       if (line.trim().startsWith('#') || line.trim().startsWith('//')) {
-                        className = "text-zinc-500 italic";
+                        className = "text-zinc-400 italic";
                       } else if (line.includes('✓ OK:') || line.startsWith('✓')) {
                         className = "text-emerald-400 font-semibold";
                       } else if (line.includes('error[') || line.includes('error:')) {
@@ -515,10 +524,10 @@ export function AnimatedPipeline() {
             </div>
 
             {/* Bottom active state indicator box */}
-            <div className="mt-8 pt-4 border-t border-zinc-900 flex items-center justify-between text-[11px] text-zinc-500">
+            <div className="mt-8 pt-4 border-t border-zinc-900 flex items-center justify-between text-[11px] text-zinc-400">
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
-                <span>Compiler State: <strong className="text-zinc-400 font-bold uppercase">{activeStepData.label}</strong></span>
+                <span>Compiler State: <strong className="text-zinc-300 font-bold uppercase">{activeStepData.label}</strong></span>
               </div>
             </div>
 

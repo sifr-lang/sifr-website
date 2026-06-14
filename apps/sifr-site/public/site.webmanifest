@@ -4,8 +4,8 @@
   "description": "Sifr is a compact, safe language for people who want Python-like ergonomics with Rust-level execution speed.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f4f7fb",
-  "theme_color": "#0f62fe",
+  "background_color": "#fafafa",
+  "theme_color": "#09090b",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
