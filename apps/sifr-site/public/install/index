@@ -5,7 +5,7 @@ set -eu
 
 DEFAULT_CHANNEL="beta"
 ALPHA_VERSION="0.1.0-alpha.1"
-BETA_VERSION="0.1.0-beta.4"
+BETA_VERSION="0.1.0-beta.6"
 DEFAULT_INSTALL_BASE_URL="https://sifr.sh/install"
 
 fail() {
@@ -33,7 +33,7 @@ normalize_channel() {
       echo "$1"
       ;;
     stable)
-      fail "stable channel installs are disabled until Phase 39"
+      fail "stable channel installs are disabled until a stable channel is supported"
       ;;
     "")
       fail "channel must not be empty"
