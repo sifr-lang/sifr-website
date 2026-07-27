@@ -58,22 +58,22 @@ workflow at an exact website commit with an exact Sifr source commit, activated
 release-index generation and digest, publication attempt, plan digest, and
 generated dispatcher/publication-facts digests. The workflow regenerates the
 four public dispatchers from that Sifr commit, re-fetches the governed index
-immediately before deployment, and never writes release metadata.
+immediately before deployment, requires the requested default channel to match
+the live index's GA state, and never writes release metadata.
 
 The `sifr.sh-production` GitHub environment must protect the Cloudflare
 credentials with required reviewers. Every dispatch input is required and
 immutable: two exact commits, a positive index generation, the index, plan,
-publication-facts, and four dispatcher SHA-256 digests, plus the main
-publication attempt identifier. A mismatch or a superseded release index fails
-closed before deploy, and the deployed public bytes are verified afterward.
-`/install` is routed to the generated `install/index` dispatcher. This
-preview-only workflow revision retains beta as that public default while the
-generator's entrypoint marker keeps its attested bytes distinct from
-`install/beta`. Sifr commits predating that paired generator contract are
-intentionally rejected by this workflow. The governed caller supplies
+publication-facts, four dispatcher SHA-256 digests, the GA-aware dispatcher
+default, and the main publication attempt identifier. A mismatch or a
+superseded release index fails closed before deploy, and the deployed public
+bytes are verified afterward. `/install` is routed to the generated
+`install/index` dispatcher. The governed caller supplies
 `dispatcher_default_channel=beta` while the index is preview and must supply
-`stable` once the activated index is active; the dispatcher digests bind that
-choice.
+`stable` once the activated index is active. The generator's entrypoint marker
+keeps `/install` attested bytes distinct from the selected channel dispatcher,
+and the dispatcher digests bind the default choice. Sifr commits predating
+that paired generator contract are intentionally rejected by this workflow.
 Each release run regenerates the three committed dispatcher files and adds the
 stable dispatcher without publishing a local metadata shadow.
 

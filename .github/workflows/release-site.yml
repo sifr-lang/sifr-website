@@ -179,8 +179,11 @@ jobs:
           verify_digest "${install_root}/stable" "${DISPATCHER_STABLE_SHA256}"
           verify_digest "${install_root}/alpha" "${DISPATCHER_ALPHA_SHA256}"
           verify_digest "${install_root}/beta" "${DISPATCHER_BETA_SHA256}"
-          if cmp -s "${install_root}/index" "${install_root}/beta"; then
-            echo "::error::generated index and beta dispatchers must have distinct attested bytes"
+          if cmp -s \
+            "${install_root}/index" \
+            "${install_root}/${DISPATCHER_DEFAULT_CHANNEL}"
+          then
+            echo "::error::generated index and default-channel dispatchers must have distinct attested bytes"
             exit 2
           fi
 
