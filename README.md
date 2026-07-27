@@ -70,9 +70,10 @@ closed before deploy, and the deployed public bytes are verified afterward.
 preview-only workflow revision retains beta as that public default while the
 generator's entrypoint marker keeps its attested bytes distinct from
 `install/beta`. Sifr commits predating that paired generator contract are
-intentionally rejected by this workflow. The
-protected GA milestone must first land and pin a paired workflow revision that
-selects stable, and may invoke it only after the active stable index exists.
+intentionally rejected by this workflow. The governed caller supplies
+`dispatcher_default_channel=beta` while the index is preview and must supply
+`stable` once the activated index is active; the dispatcher digests bind that
+choice.
 Each release run regenerates the three committed dispatcher files and adds the
 stable dispatcher without publishing a local metadata shadow.
 

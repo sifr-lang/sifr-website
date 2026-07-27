@@ -44,6 +44,10 @@ on:
         description: Generated /install/beta dispatcher digest
         required: true
         type: string
+      dispatcher_default_channel:
+        description: GA-aware /install default, beta before activation and stable after
+        required: true
+        type: string
       publication_facts_sha256:
         description: Canonical site-publication facts digest
         required: true
@@ -73,6 +77,7 @@ jobs:
       DISPATCHER_STABLE_SHA256: ${{ inputs.dispatcher_stable_sha256 }}
       DISPATCHER_ALPHA_SHA256: ${{ inputs.dispatcher_alpha_sha256 }}
       DISPATCHER_BETA_SHA256: ${{ inputs.dispatcher_beta_sha256 }}
+      DISPATCHER_DEFAULT_CHANNEL: ${{ inputs.dispatcher_default_channel }}
       PUBLICATION_FACTS_SHA256: ${{ inputs.publication_facts_sha256 }}
     steps:
       - name: Validate immutable dispatch inputs
@@ -99,6 +104,10 @@ jobs:
           require_match "publication_facts_sha256" "${PUBLICATION_FACTS_SHA256}" '^[0-9a-f]{64}$'
           require_match "publication_attempt" "${PUBLICATION_ATTEMPT}" '^[A-Za-z0-9._-]{1,80}$'
           require_match "release_index_generation" "${RELEASE_INDEX_GENERATION}" '^[1-9][0-9]*$'
+          case "${DISPATCHER_DEFAULT_CHANNEL}" in
+            beta|stable) ;;
+            *) echo "::error::dispatcher_default_channel must be beta or stable"; exit 2 ;;
+          esac
 
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -145,7 +154,7 @@ jobs:
           rm -rf "${install_root}/metadata" "${install_root}/versions"
           .release/sifr/scripts/distribution/generate_dispatchers.sh \
             --install-root "${install_root}" \
-            --default-channel beta
+            --default-channel "${DISPATCHER_DEFAULT_CHANNEL}"
 
           actual_entries="$(
             find "${install_root}" -mindepth 1 -maxdepth 1 -exec basename {} \; |
@@ -188,6 +197,7 @@ jobs:
             --publication-attempt "${PUBLICATION_ATTEMPT}" \
             --release-index-generation "${RELEASE_INDEX_GENERATION}" \
             --release-index-sha256 "${RELEASE_INDEX_SHA256}" \
+            --dispatcher-default-channel "${DISPATCHER_DEFAULT_CHANNEL}" \
             --dispatcher-index-sha256 "${DISPATCHER_INDEX_SHA256}" \
             --dispatcher-stable-sha256 "${DISPATCHER_STABLE_SHA256}" \
             --dispatcher-alpha-sha256 "${DISPATCHER_ALPHA_SHA256}" \
@@ -378,4 +388,5 @@ jobs:
             echo "- index generation: \`${RELEASE_INDEX_GENERATION}\`"
             echo "- index digest: \`${RELEASE_INDEX_SHA256}\`"
             echo "- publication facts: \`${PUBLICATION_FACTS_SHA256}\`"
+            echo "- dispatcher default: \`${DISPATCHER_DEFAULT_CHANNEL}\`"
           } >>"${GITHUB_STEP_SUMMARY}"
