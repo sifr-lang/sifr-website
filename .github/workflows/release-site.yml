@@ -315,12 +315,23 @@ jobs:
             python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["generation"])' \
               "${live_index}"
           )"
+          live_ga_status="$(
+            python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["ga_status"])' \
+              "${live_index}"
+          )"
           live_sha256="$(sha256sum "${live_index}" | awk '{print $1}')"
           if [[ "${live_generation}" != "${RELEASE_INDEX_GENERATION}" ||
                 "${live_sha256}" != "${RELEASE_INDEX_SHA256}" ]]; then
             echo "::error::activated release index was superseded before site deploy"
             exit 2
           fi
+          case "${live_ga_status}:${DISPATCHER_DEFAULT_CHANNEL}" in
+            preview:beta|active:stable) ;;
+            *)
+              echo "::error::dispatcher default does not match the live index GA state"
+              exit 2
+              ;;
+          esac
 
       - name: Deploy sifr.sh
         shell: bash
