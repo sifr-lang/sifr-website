@@ -3,7 +3,7 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === '/install') {
-      url.pathname = '/install/beta';
+      url.pathname = '/install/index';
       return env.ASSETS.fetch(new Request(url, request));
     }
 

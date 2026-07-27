@@ -52,6 +52,35 @@ From `apps/sifr-site` directly:
 
 Deploy uses Wrangler static assets mode (`apps/sifr-site/wrangler.jsonc`).
 
+Release-owned installer deployment is performed only by
+`.github/workflows/release-site.yml`. The Sifr repository dispatches that
+workflow at an exact website commit with an exact Sifr source commit, activated
+release-index generation and digest, publication attempt, plan digest, and
+generated dispatcher/publication-facts digests. The workflow regenerates the
+four public dispatchers from that Sifr commit, re-fetches the governed index
+immediately before deployment, and never writes release metadata.
+
+The `sifr.sh-production` GitHub environment must protect the Cloudflare
+credentials with required reviewers. Every dispatch input is required and
+immutable: two exact commits, a positive index generation, the index, plan,
+publication-facts, and four dispatcher SHA-256 digests, plus the main
+publication attempt identifier. A mismatch or a superseded release index fails
+closed before deploy, and the deployed public bytes are verified afterward.
+`/install` is routed to the generated `install/index` dispatcher. This
+preview-only workflow revision retains beta as that public default while the
+generator's entrypoint marker keeps its attested bytes distinct from
+`install/beta`. Sifr commits predating that paired generator contract are
+intentionally rejected by this workflow. The
+protected GA milestone must first land and pin a paired workflow revision that
+selects stable, and may invoke it only after the active stable index exists.
+Each release run regenerates the three committed dispatcher files and adds the
+stable dispatcher without publishing a local metadata shadow.
+
+The Cloudflare Worker version and deployment messages include the publication
+attempt plus both source commits, so the GitHub and Cloudflare audit trails can
+be correlated. Pull requests and `main` pushes build the production site before
+release approval is possible.
+
 ## Prerequisites
 
 - Node.js 24+ (see `.nvmrc`; run `nvm use` if you use nvm)

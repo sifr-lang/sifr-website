@@ -8,6 +8,7 @@
     "dev:wrangler": "npm run build && wrangler dev",
     "start": "astro dev",
     "build": "astro build",
+    "test:install-routing": "node scripts/check-install-routing.mjs",
     "preview": "astro preview",
     "deploy": "wrangler deploy",
     "astro": "astro"
