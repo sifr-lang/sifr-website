@@ -1,0 +1,381 @@
+name: release-site
+run-name: Sifr site release ${{ inputs.publication_attempt }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      sifr_source_commit:
+        description: Exact Sifr source commit that owns the release
+        required: true
+        type: string
+      release_plan_sha256:
+        description: Canonical publication plan digest
+        required: true
+        type: string
+      publication_attempt:
+        description: Correlation identifier from the Sifr publication run
+        required: true
+        type: string
+      release_index_generation:
+        description: Activated release-index generation
+        required: true
+        type: string
+      release_index_sha256:
+        description: Activated canonical release-index digest
+        required: true
+        type: string
+      site_base_commit:
+        description: Exact website commit dispatched by Sifr
+        required: true
+        type: string
+      dispatcher_index_sha256:
+        description: Generated /install dispatcher digest
+        required: true
+        type: string
+      dispatcher_stable_sha256:
+        description: Generated /install/stable dispatcher digest
+        required: true
+        type: string
+      dispatcher_alpha_sha256:
+        description: Generated /install/alpha dispatcher digest
+        required: true
+        type: string
+      dispatcher_beta_sha256:
+        description: Generated /install/beta dispatcher digest
+        required: true
+        type: string
+      publication_facts_sha256:
+        description: Canonical site-publication facts digest
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sifr-site-release
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: deploy correlated release site
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    environment: sifr.sh-production
+    env:
+      SIFR_SOURCE_COMMIT: ${{ inputs.sifr_source_commit }}
+      RELEASE_PLAN_SHA256: ${{ inputs.release_plan_sha256 }}
+      PUBLICATION_ATTEMPT: ${{ inputs.publication_attempt }}
+      RELEASE_INDEX_GENERATION: ${{ inputs.release_index_generation }}
+      RELEASE_INDEX_SHA256: ${{ inputs.release_index_sha256 }}
+      SITE_BASE_COMMIT: ${{ inputs.site_base_commit }}
+      DISPATCHER_INDEX_SHA256: ${{ inputs.dispatcher_index_sha256 }}
+      DISPATCHER_STABLE_SHA256: ${{ inputs.dispatcher_stable_sha256 }}
+      DISPATCHER_ALPHA_SHA256: ${{ inputs.dispatcher_alpha_sha256 }}
+      DISPATCHER_BETA_SHA256: ${{ inputs.dispatcher_beta_sha256 }}
+      PUBLICATION_FACTS_SHA256: ${{ inputs.publication_facts_sha256 }}
+    steps:
+      - name: Validate immutable dispatch inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          require_match() {
+            local name="$1"
+            local value="$2"
+            local pattern="$3"
+            if [[ ! "${value}" =~ ${pattern} ]]; then
+              echo "::error::${name} has an invalid immutable identity"
+              exit 2
+            fi
+          }
+          require_match "sifr_source_commit" "${SIFR_SOURCE_COMMIT}" '^[0-9a-f]{40}$'
+          require_match "site_base_commit" "${SITE_BASE_COMMIT}" '^[0-9a-f]{40}$'
+          require_match "release_plan_sha256" "${RELEASE_PLAN_SHA256}" '^[0-9a-f]{64}$'
+          require_match "release_index_sha256" "${RELEASE_INDEX_SHA256}" '^[0-9a-f]{64}$'
+          require_match "dispatcher_index_sha256" "${DISPATCHER_INDEX_SHA256}" '^[0-9a-f]{64}$'
+          require_match "dispatcher_stable_sha256" "${DISPATCHER_STABLE_SHA256}" '^[0-9a-f]{64}$'
+          require_match "dispatcher_alpha_sha256" "${DISPATCHER_ALPHA_SHA256}" '^[0-9a-f]{64}$'
+          require_match "dispatcher_beta_sha256" "${DISPATCHER_BETA_SHA256}" '^[0-9a-f]{64}$'
+          require_match "publication_facts_sha256" "${PUBLICATION_FACTS_SHA256}" '^[0-9a-f]{64}$'
+          require_match "publication_attempt" "${PUBLICATION_ATTEMPT}" '^[A-Za-z0-9._-]{1,80}$'
+          require_match "release_index_generation" "${RELEASE_INDEX_GENERATION}" '^[1-9][0-9]*$'
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ inputs.site_base_commit }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: sifr-lang/sifr
+          ref: ${{ inputs.sifr_source_commit }}
+          path: .release/sifr
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Verify exact checkouts and regenerate public dispatchers
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${SITE_BASE_COMMIT}" || {
+            echo "::error::website checkout did not resolve to the dispatched base commit"
+            exit 2
+          }
+          git fetch --no-tags origin main:refs/remotes/origin/main
+          git merge-base --is-ancestor \
+            "${SITE_BASE_COMMIT}" refs/remotes/origin/main || {
+            echo "::error::website release base must be reachable from protected main"
+            exit 2
+          }
+          test "$(git -C .release/sifr rev-parse HEAD)" = "${SIFR_SOURCE_COMMIT}" || {
+            echo "::error::Sifr checkout did not resolve to the dispatched source commit"
+            exit 2
+          }
+          git -C .release/sifr fetch --no-tags origin \
+            main:refs/remotes/origin/main
+          git -C .release/sifr merge-base --is-ancestor \
+            "${SIFR_SOURCE_COMMIT}" refs/remotes/origin/main || {
+            echo "::error::Sifr release source must be reachable from protected main"
+            exit 2
+          }
+
+          install_root="apps/sifr-site/public/install"
+          rm -f "${install_root}/channels.json"
+          rm -rf "${install_root}/metadata" "${install_root}/versions"
+          .release/sifr/scripts/distribution/generate_dispatchers.sh \
+            --install-root "${install_root}" \
+            --default-channel beta
+
+          actual_entries="$(
+            find "${install_root}" -mindepth 1 -maxdepth 1 -exec basename {} \; |
+              LC_ALL=C sort |
+              tr '\n' ' '
+          )"
+          if [[ "${actual_entries}" != "alpha beta index stable " ]]; then
+            echo "::error::dispatcher generator emitted forbidden site release state: ${actual_entries}"
+            exit 2
+          fi
+          verify_digest() {
+            local file="$1"
+            local expected="$2"
+            local actual
+            actual="$(sha256sum "${file}" | awk '{print $1}')"
+            if [[ "${actual}" != "${expected}" ]]; then
+              echo "::error::dispatcher digest mismatch for ${file}"
+              exit 2
+            fi
+          }
+          verify_digest "${install_root}/index" "${DISPATCHER_INDEX_SHA256}"
+          verify_digest "${install_root}/stable" "${DISPATCHER_STABLE_SHA256}"
+          verify_digest "${install_root}/alpha" "${DISPATCHER_ALPHA_SHA256}"
+          verify_digest "${install_root}/beta" "${DISPATCHER_BETA_SHA256}"
+          if cmp -s "${install_root}/index" "${install_root}/beta"; then
+            echo "::error::generated index and beta dispatchers must have distinct attested bytes"
+            exit 2
+          fi
+
+      - name: Verify canonical publication facts
+        shell: bash
+        run: |
+          set -euo pipefail
+          facts_file="${RUNNER_TEMP}/site-publication-facts.json"
+          .release/sifr/scripts/distribution/generate_site_publication_facts.py \
+            --out "${facts_file}" \
+            --source-commit "${SIFR_SOURCE_COMMIT}" \
+            --site-base-commit "${SITE_BASE_COMMIT}" \
+            --release-plan-sha256 "${RELEASE_PLAN_SHA256}" \
+            --publication-attempt "${PUBLICATION_ATTEMPT}" \
+            --release-index-generation "${RELEASE_INDEX_GENERATION}" \
+            --release-index-sha256 "${RELEASE_INDEX_SHA256}" \
+            --dispatcher-index-sha256 "${DISPATCHER_INDEX_SHA256}" \
+            --dispatcher-stable-sha256 "${DISPATCHER_STABLE_SHA256}" \
+            --dispatcher-alpha-sha256 "${DISPATCHER_ALPHA_SHA256}" \
+            --dispatcher-beta-sha256 "${DISPATCHER_BETA_SHA256}"
+          actual="$(sha256sum "${facts_file}" | awk '{print $1}')"
+          if [[ "${actual}" != "${PUBLICATION_FACTS_SHA256}" ]]; then
+            echo "::error::site publication facts digest mismatch"
+            exit 2
+          fi
+
+      - name: Enforce site mutation boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          site_status=""
+          if ! site_status="$(git status --porcelain --untracked-files=all)"; then
+            echo "::error::could not inspect the website mutation boundary"
+            exit 2
+          fi
+          unexpected="$(
+            printf '%s\n' "${site_status}" |
+              grep -vE '^( M| D|\?\?) apps/sifr-site/public/install/(alpha|beta|index|stable)$' |
+              grep -vE '^\?\? \.release/sifr/' || true
+          )"
+          if [[ -n "${unexpected}" ]]; then
+            echo "::error::Sifr release tooling modified files outside the four dispatchers"
+            printf '%s\n' "${unexpected}"
+            exit 2
+          fi
+          forbidden_ignored="$(
+            find . \
+              \( -path './.git' -o -path './.release' \) -prune -o \
+              \( -name '.env' -o -name '.env.*' -o -name '.dev.vars' -o -name '.wrangler' \) \
+              -print
+          )"
+          if [[ -n "${forbidden_ignored}" ]]; then
+            echo "::error::Sifr release tooling emitted ignored configuration state"
+            printf '%s\n' "${forbidden_ignored}"
+            exit 2
+          fi
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install and build exact site
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build:site
+
+      - name: Verify deployable dispatcher bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          verify_deploy_digest() {
+            local file="$1"
+            local expected="$2"
+            local actual
+            actual="$(sha256sum "${file}" | awk '{print $1}')"
+            if [[ "${actual}" != "${expected}" ]]; then
+              echo "::error::deployable dispatcher digest mismatch for ${file}"
+              exit 2
+            fi
+          }
+          dist_install="apps/sifr-site/dist/install"
+          verify_deploy_digest "${dist_install}/index" "${DISPATCHER_INDEX_SHA256}"
+          verify_deploy_digest "${dist_install}/stable" "${DISPATCHER_STABLE_SHA256}"
+          verify_deploy_digest "${dist_install}/alpha" "${DISPATCHER_ALPHA_SHA256}"
+          verify_deploy_digest "${dist_install}/beta" "${DISPATCHER_BETA_SHA256}"
+
+      - name: Re-fetch activated index immediately before deploy
+        shell: bash
+        env:
+          GH_API_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          live_index="${RUNNER_TEMP}/channels.json"
+          release_json="${RUNNER_TEMP}/channels-release.json"
+          curl --fail --silent --show-error --location \
+            --retry 3 --retry-all-errors --connect-timeout 10 --max-time 30 \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_API_TOKEN}" \
+            -H "Cache-Control: no-cache" \
+            -H "Pragma: no-cache" \
+            "https://api.github.com/repos/sifr-lang/sifr/releases/tags/channels?site_run=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            -o "${release_json}"
+          asset_url="$(
+            python3 - "${release_json}" <<'PY'
+          import json
+          import sys
+
+          release = json.load(open(sys.argv[1], encoding="utf-8"))
+          matches = [asset["url"] for asset in release["assets"] if asset["name"] == "channels.json"]
+          if len(matches) != 1:
+              raise SystemExit("channels release must contain exactly one channels.json asset")
+          print(matches[0])
+          PY
+          )"
+          curl --fail --silent --show-error --location \
+            --retry 3 --retry-all-errors --connect-timeout 10 --max-time 30 \
+            -H "Accept: application/octet-stream" \
+            -H "Authorization: Bearer ${GH_API_TOKEN}" \
+            -H "Cache-Control: no-cache" \
+            -H "Pragma: no-cache" \
+            "${asset_url}?site_run=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            -o "${live_index}"
+          .release/sifr/scripts/distribution/release_governance.py validate \
+            --kind release-index \
+            --input "${live_index}" \
+            --require-canonical
+          live_generation="$(
+            python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["generation"])' \
+              "${live_index}"
+          )"
+          live_sha256="$(sha256sum "${live_index}" | awk '{print $1}')"
+          if [[ "${live_generation}" != "${RELEASE_INDEX_GENERATION}" ||
+                "${live_sha256}" != "${RELEASE_INDEX_SHA256}" ]]; then
+            echo "::error::activated release index was superseded before site deploy"
+            exit 2
+          fi
+
+      - name: Deploy sifr.sh
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          version_tag="sifr-${PUBLICATION_ATTEMPT}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          message="Sifr publication ${PUBLICATION_ATTEMPT}; site run ${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}; source ${SIFR_SOURCE_COMMIT}; site ${SITE_BASE_COMMIT}"
+          npm exec -w apps/sifr-site -- wrangler versions upload \
+            --tag "${version_tag}" \
+            --message "${message}"
+          npm exec -w apps/sifr-site -- wrangler versions deploy \
+            --version-tag "${version_tag}" \
+            --message "${message}" \
+            --yes
+
+      - name: Verify deployed dispatcher bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          verify_public_dispatcher() {
+            local path="$1"
+            local expected="$2"
+            local body="${RUNNER_TEMP}/public-$(
+              printf '%s' "${path}" | tr '/' '-'
+            )"
+            local actual=""
+            for retry in $(seq 1 6); do
+              if curl --fail --silent --show-error --location \
+                  --connect-timeout 5 --max-time 10 \
+                  -H "Cache-Control: no-cache" \
+                  -H "Pragma: no-cache" \
+                  "https://sifr.sh${path}?site_run=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${retry}" \
+                  -o "${body}"; then
+                actual="$(sha256sum "${body}" | awk '{print $1}')"
+                [[ "${actual}" == "${expected}" ]] && return
+              fi
+              sleep 2
+            done
+            echo "::error::deployed dispatcher digest mismatch for ${path}: ${actual}"
+            exit 2
+          }
+          verify_public_dispatcher "/install" "${DISPATCHER_INDEX_SHA256}"
+          verify_public_dispatcher "/install/index" "${DISPATCHER_INDEX_SHA256}"
+          verify_public_dispatcher "/install/stable" "${DISPATCHER_STABLE_SHA256}"
+          verify_public_dispatcher "/install/alpha" "${DISPATCHER_ALPHA_SHA256}"
+          verify_public_dispatcher "/install/beta" "${DISPATCHER_BETA_SHA256}"
+
+      - name: Record correlated terminal result
+        if: always()
+        shell: bash
+        env:
+          TERMINAL_RESULT: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          {
+            echo "### Correlated Sifr site release"
+            echo
+            echo "- result: \`${TERMINAL_RESULT}\`"
+            echo "- publication attempt: \`${PUBLICATION_ATTEMPT}\`"
+            echo "- Sifr source: \`${SIFR_SOURCE_COMMIT}\`"
+            echo "- site base: \`${SITE_BASE_COMMIT}\`"
+            echo "- index generation: \`${RELEASE_INDEX_GENERATION}\`"
+            echo "- index digest: \`${RELEASE_INDEX_SHA256}\`"
+            echo "- publication facts: \`${PUBLICATION_FACTS_SHA256}\`"
+          } >>"${GITHUB_STEP_SUMMARY}"
