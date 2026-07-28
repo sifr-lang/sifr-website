@@ -18,6 +18,9 @@ export async function GET({ site }: APIContext) {
   const staticPages = [
     { path: '/', lastmod: null as Date | null },
     { path: '/blog', lastmod: null as Date | null },
+    ...(process.env.STABLE_PAGE_REQUIRED === 'true'
+      ? [{ path: '/releases/stable/', lastmod: null as Date | null }]
+      : []),
   ];
 
   const blogPages = posts.map((post) => ({

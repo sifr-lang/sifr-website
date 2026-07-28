@@ -52,6 +52,10 @@ on:
         description: Canonical site-publication facts digest
         required: true
         type: string
+      stable_site_facts_sha256:
+        description: Canonical stable-site-release facts digest, or none before GA
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -79,6 +83,7 @@ jobs:
       DISPATCHER_BETA_SHA256: ${{ inputs.dispatcher_beta_sha256 }}
       DISPATCHER_DEFAULT_CHANNEL: ${{ inputs.dispatcher_default_channel }}
       PUBLICATION_FACTS_SHA256: ${{ inputs.publication_facts_sha256 }}
+      STABLE_SITE_FACTS_SHA256: ${{ inputs.stable_site_facts_sha256 }}
     steps:
       - name: Validate immutable dispatch inputs
         shell: bash
@@ -102,6 +107,9 @@ jobs:
           require_match "dispatcher_alpha_sha256" "${DISPATCHER_ALPHA_SHA256}" '^[0-9a-f]{64}$'
           require_match "dispatcher_beta_sha256" "${DISPATCHER_BETA_SHA256}" '^[0-9a-f]{64}$'
           require_match "publication_facts_sha256" "${PUBLICATION_FACTS_SHA256}" '^[0-9a-f]{64}$'
+          if [[ "${STABLE_SITE_FACTS_SHA256}" != "none" ]]; then
+            require_match "stable_site_facts_sha256" "${STABLE_SITE_FACTS_SHA256}" '^[0-9a-f]{64}$'
+          fi
           require_match "publication_attempt" "${PUBLICATION_ATTEMPT}" '^[A-Za-z0-9._-]{1,80}$'
           require_match "release_index_generation" "${RELEASE_INDEX_GENERATION}" '^[1-9][0-9]*$'
           case "${DISPATCHER_DEFAULT_CHANNEL}" in
@@ -187,6 +195,106 @@ jobs:
             exit 2
           fi
 
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Materialize governed stable release page
+        shell: bash
+        env:
+          GH_API_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          echo "STABLE_PAGE_REQUIRED=false" >>"${GITHUB_ENV}"
+          live_index="${RUNNER_TEMP}/channels-for-stable-page.json"
+          release_json="${RUNNER_TEMP}/channels-release-for-stable-page.json"
+          curl --fail --silent --show-error --location \
+            --retry 3 --retry-all-errors --connect-timeout 10 --max-time 30 \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_API_TOKEN}" \
+            -H "Cache-Control: no-cache" \
+            -H "Pragma: no-cache" \
+            "https://api.github.com/repos/sifr-lang/sifr/releases/tags/channels?site_page=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            -o "${release_json}"
+          asset_url="$(
+            python3 - "${release_json}" <<'PY'
+          import json
+          import sys
+
+          release = json.load(open(sys.argv[1], encoding="utf-8"))
+          matches = [asset["url"] for asset in release["assets"] if asset["name"] == "channels.json"]
+          if len(matches) != 1:
+              raise SystemExit("channels release must contain exactly one channels.json asset")
+          print(matches[0])
+          PY
+          )"
+          curl --fail --silent --show-error --location \
+            --retry 3 --retry-all-errors --connect-timeout 10 --max-time 30 \
+            -H "Accept: application/octet-stream" \
+            -H "Authorization: Bearer ${GH_API_TOKEN}" \
+            -H "Cache-Control: no-cache" \
+            -H "Pragma: no-cache" \
+            "${asset_url}?site_page=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            -o "${live_index}"
+          live_sha256="$(sha256sum "${live_index}" | awk '{print $1}')"
+          .release/sifr/scripts/distribution/release_governance.py validate \
+            --kind release-index --input "${live_index}" --require-canonical
+          test "${live_sha256}" = "${RELEASE_INDEX_SHA256}" || {
+            echo "::error::stable page index digest disagrees with dispatch"
+            exit 2
+          }
+          live_generation="$(
+            python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["generation"])' \
+              "${live_index}"
+          )"
+          live_ga_status="$(
+            python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["ga_status"])' \
+              "${live_index}"
+          )"
+          test "${live_generation}" = "${RELEASE_INDEX_GENERATION}" || {
+            echo "::error::stable page index generation disagrees with dispatch"
+            exit 2
+          }
+          case "${live_ga_status}:${DISPATCHER_DEFAULT_CHANNEL}:${STABLE_SITE_FACTS_SHA256}" in
+            preview:beta:none)
+              exit 0
+              ;;
+            active:stable:[0-9a-f]*)
+              ;;
+            *)
+              echo "::error::stable page facts do not match the governed GA state"
+              exit 2
+              ;;
+          esac
+          .release/sifr/scripts/distribution/release_governance.py \
+            generate-site-facts \
+            --release-index "${live_index}" \
+            --source-plan-sha256 "${RELEASE_PLAN_SHA256}" \
+            --release-index-sha256 "${RELEASE_INDEX_SHA256}" \
+            --dispatcher "index=${DISPATCHER_INDEX_SHA256}" \
+            --dispatcher "stable=${DISPATCHER_STABLE_SHA256}" \
+            --dispatcher "alpha=${DISPATCHER_ALPHA_SHA256}" \
+            --dispatcher "beta=${DISPATCHER_BETA_SHA256}" \
+            --out "${RUNNER_TEMP}/stable-site-release-facts.json"
+          actual_facts_sha256="$(
+            sha256sum "${RUNNER_TEMP}/stable-site-release-facts.json" |
+              awk '{print $1}'
+          )"
+          test "${actual_facts_sha256}" = "${STABLE_SITE_FACTS_SHA256}" || {
+            echo "::error::stable site facts digest mismatch"
+            exit 2
+          }
+          node apps/sifr-site/scripts/render-stable-release-page.mjs \
+            --facts "${RUNNER_TEMP}/stable-site-release-facts.json" \
+            --out "apps/sifr-site/public/releases/stable/index.html"
+          stable_page_sha256="$(
+            sha256sum apps/sifr-site/public/releases/stable/index.html |
+              awk '{print $1}'
+          )"
+          echo "STABLE_PAGE_REQUIRED=true" >>"${GITHUB_ENV}"
+          echo "STABLE_PAGE_SHA256=${stable_page_sha256}" >>"${GITHUB_ENV}"
+
       - name: Verify canonical publication facts
         shell: bash
         run: |
@@ -223,6 +331,7 @@ jobs:
           unexpected="$(
             printf '%s\n' "${site_status}" |
               grep -vE '^( M| D|\?\?) apps/sifr-site/public/install/(alpha|beta|index|stable)$' |
+              grep -vE '^\?\? apps/sifr-site/public/releases/stable/index.html$' |
               grep -vE '^\?\? \.release/sifr/' || true
           )"
           if [[ -n "${unexpected}" ]]; then
@@ -241,11 +350,6 @@ jobs:
             printf '%s\n' "${forbidden_ignored}"
             exit 2
           fi
-
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version-file: .node-version
-          cache: npm
 
       - name: Install and build exact site
         shell: bash
@@ -273,6 +377,14 @@ jobs:
           verify_deploy_digest "${dist_install}/stable" "${DISPATCHER_STABLE_SHA256}"
           verify_deploy_digest "${dist_install}/alpha" "${DISPATCHER_ALPHA_SHA256}"
           verify_deploy_digest "${dist_install}/beta" "${DISPATCHER_BETA_SHA256}"
+          if [[ "${STABLE_PAGE_REQUIRED}" == "true" ]]; then
+            verify_deploy_digest \
+              "apps/sifr-site/dist/releases/stable/index.html" \
+              "${STABLE_PAGE_SHA256}"
+          elif [[ -e "apps/sifr-site/dist/releases/stable/index.html" ]]; then
+            echo "::error::preview site unexpectedly contains a stable release page"
+            exit 2
+          fi
 
       - name: Re-fetch activated index immediately before deploy
         shell: bash
@@ -384,6 +496,10 @@ jobs:
           verify_public_dispatcher "/install/stable" "${DISPATCHER_STABLE_SHA256}"
           verify_public_dispatcher "/install/alpha" "${DISPATCHER_ALPHA_SHA256}"
           verify_public_dispatcher "/install/beta" "${DISPATCHER_BETA_SHA256}"
+          if [[ "${STABLE_PAGE_REQUIRED}" == "true" ]]; then
+            verify_public_dispatcher \
+              "/releases/stable/" "${STABLE_PAGE_SHA256}"
+          fi
 
       - name: Record correlated terminal result
         if: always()
@@ -402,5 +518,6 @@ jobs:
             echo "- index generation: \`${RELEASE_INDEX_GENERATION}\`"
             echo "- index digest: \`${RELEASE_INDEX_SHA256}\`"
             echo "- publication facts: \`${PUBLICATION_FACTS_SHA256}\`"
+            echo "- stable site facts: \`${STABLE_SITE_FACTS_SHA256}\`"
             echo "- dispatcher default: \`${DISPATCHER_DEFAULT_CHANNEL}\`"
           } >>"${GITHUB_STEP_SUMMARY}"

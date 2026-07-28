@@ -56,18 +56,24 @@ Release-owned installer deployment is performed only by
 `.github/workflows/release-site.yml`. The Sifr repository dispatches that
 workflow at an exact website commit with an exact Sifr source commit, activated
 release-index generation and digest, publication attempt, plan digest, and
-generated dispatcher/publication-facts digests. The workflow regenerates the
-four public dispatchers from that Sifr commit, re-fetches the governed index
-immediately before deployment, requires the requested default channel to match
-the live index's GA state, and never writes release metadata.
+generated dispatcher/publication-facts digests. Once GA is active, the dispatch
+also binds the exact `stable-site-release-facts.json` digest. The workflow
+regenerates the four public dispatchers from that Sifr commit, re-fetches the
+governed index, derives and byte-verifies the canonical stable facts, and
+renders `/releases/stable` with the active version plus every withdrawn version
+and incident id. Preview deployments require the stable-facts identity to be
+`none` and do not publish that route. The workflow re-fetches the governed
+index immediately before deployment, requires the requested default channel to
+match the live index's GA state, and never writes release metadata.
 
 The `sifr.sh-production` GitHub environment must protect the Cloudflare
 credentials with required reviewers. Every dispatch input is required and
 immutable: two exact commits, a positive index generation, the index, plan,
-publication-facts, four dispatcher SHA-256 digests, the GA-aware dispatcher
-default, and the main publication attempt identifier. A mismatch or a
-superseded release index fails closed before deploy, and the deployed public
-bytes are verified afterward. `/install` is routed to the generated
+publication-facts, stable-site-facts identity, four dispatcher SHA-256 digests,
+the GA-aware dispatcher default, and the main publication attempt identifier.
+A mismatch or a superseded release index fails closed before deploy, and the
+deployed public dispatchers and GA release page are verified byte-for-byte
+afterward. `/install` is routed to the generated
 `install/index` dispatcher. The governed caller supplies
 `dispatcher_default_channel=beta` while the index is preview and must supply
 `stable` once the activated index is active. The generator's entrypoint marker
@@ -76,6 +82,9 @@ and the dispatcher digests bind the default choice. Sifr commits predating
 that paired generator contract are intentionally rejected by this workflow.
 Each release run regenerates the three committed dispatcher files and adds the
 stable dispatcher without publishing a local metadata shadow.
+The only additional release-owned site mutation is the generated
+`apps/sifr-site/public/releases/stable/index.html` file on an active GA index;
+the workflow's mutation-boundary check rejects every other path.
 
 The Cloudflare Worker version and deployment messages include the publication
 attempt plus both source commits, so the GitHub and Cloudflare audit trails can

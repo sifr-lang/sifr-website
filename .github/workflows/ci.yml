@@ -27,6 +27,9 @@ jobs:
       - name: Install exact dependencies
         run: npm ci
 
+      - name: Test stable release page renderer
+        run: npm run test:stable-release-page -w apps/sifr-site
+
       - name: Build production site
         run: npm run build:site
 
